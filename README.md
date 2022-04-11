@@ -2,13 +2,11 @@
 
 Profesor: Luciano Radrigan F
 
-## Raspberry
+## Table of contents
 
-## ESP32 S1
-
-## ESP32 S2
-
-## Help
+- Raspberry
+- [ESP32 S1 - TCP client](https://github.com/Kuellar/tarea1IOT/tree/main/tcp_client_S1)
+- [ESP32 S2 - UPD client](https://github.com/Kuellar/tarea1IOT/tree/main/udp_client_S2)
 
 ## Authors
 
