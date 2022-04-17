@@ -23,7 +23,7 @@ DATA_8 = 6400
 DATA_9 = 6400
 DATA_10 = 6400
 
-def open_file(file):
+def set_file(file):
     try:
         f = open(file, 'r')
     except:
@@ -31,13 +31,11 @@ def open_file(file):
         f.write(HEADER_CSV+'\n')
     else:
         check = f.read(len(HEADER_CSV)) == HEADER_CSV
-        if check:
-            f = open(file, 'a')
-        else:
+        if not check:
             f = open(file, 'w')
             f.write(HEADER_CSV+'\n')
     finally:
-        return f
+        f.close()
 
 def write_line(file, data):
     n = 0
@@ -114,14 +112,14 @@ def write_line(file, data):
 def server(port=PORT, file=FILENAME, host=HOST):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind((host, port))
-    f = open_file(file)
+    set_file(file)
 
-    # FIX: USE THREADS
-    for _ in range(10):
-        print('...')
+    while True:
+        f = open(file, 'a')
         data, _ = s.recvfrom(11+19216)
         write_line(f, data)
-    f.close()
+        f.close()
+
 
 if __name__ == '__main__':
     arg = sys.argv
