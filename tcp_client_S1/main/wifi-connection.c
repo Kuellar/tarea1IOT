@@ -21,6 +21,20 @@
 #define TCP_FAILURE 1 << 1
 #define MAX_FAILURES 10
 
+/** PROTOCOL **/
+#define BYTE sizeof(char)
+#define ID_DEVICE_SPACE 2
+#define MAC_SPACE 6
+#define ID_PROTOCOL_SPACE 1
+#define LENG_MSG_SPACE 2
+#define DATA_1_SPACE 1
+#define DATA_2_SPACE 1
+#define DATA_3_SPACE 4
+#define DATA_4_SPACE 1
+#define DATA_5_SPACE 4
+#define DATA_6_SPACE 1
+#define DATA_N_SPACE 4
+
 /** GLOBALS **/
 
 // event group to contain status information
@@ -33,9 +47,80 @@ static int s_retry_num = 0;
 static const char *TAG = "WIFI";
 /** FUNCTIONS **/
 
-void split(int val, unsigned char *arr)
-{
-    memcpy(arr, &val, sizeof(int));
+void get_protocol_0(unsigned char *arr, unsigned char prot, unsigned int lmesg) {
+    unsigned int device = 9;
+    unsigned long long int mac = 68465;
+    unsigned char protocol = prot;
+    unsigned int leng_mesg = lmesg;
+    unsigned int data_1 = 1;
+    unsigned int data_2 = 50;
+    time_t data_3 = time(NULL);
+
+    int i = 0;
+    memcpy(arr, &device, BYTE * ID_DEVICE_SPACE);
+    i += ID_DEVICE_SPACE;
+    memcpy(&(arr[i]), &mac, BYTE * MAC_SPACE);
+    i += MAC_SPACE;
+    memcpy(&(arr[i]), &protocol, BYTE * ID_PROTOCOL_SPACE);
+    i += ID_PROTOCOL_SPACE;
+    memcpy(&(arr[i]), &leng_mesg, BYTE * LENG_MSG_SPACE);
+    i += LENG_MSG_SPACE;
+    memcpy(&(arr[i]), &data_1, BYTE * DATA_1_SPACE);
+    i += DATA_1_SPACE;
+    memcpy(&(arr[i]), &data_2, BYTE * DATA_2_SPACE);
+    i += DATA_2_SPACE;
+    memcpy(&(arr[i]), &data_3, BYTE * DATA_3_SPACE);
+}
+
+void get_protocol_1(unsigned char *arr, unsigned char prot, unsigned int lmesg) {
+    get_protocol_0(arr, prot, lmesg);
+
+    unsigned int data_4 = 123;
+    unsigned int data_5 = 12345;
+    unsigned int data_6 = 123;
+    unsigned int data_7 = 12345;
+
+    int i = 17;
+    memcpy(&(arr[i]), &data_4, BYTE * DATA_4_SPACE);
+    i += DATA_4_SPACE;
+    memcpy(&(arr[i]), &data_5, BYTE * DATA_5_SPACE);
+    i += DATA_5_SPACE;
+    memcpy(&(arr[i]), &data_6, BYTE * DATA_6_SPACE);
+    i += DATA_6_SPACE;
+    memcpy(&(arr[i]), &data_7, BYTE * DATA_N_SPACE);
+}
+
+void get_protocol_2(unsigned char *arr, unsigned char prot, unsigned int lmesg) {
+    get_protocol_1(arr, prot, lmesg);
+
+    unsigned int data_8 = 12345;
+
+    int i = 27;
+    memcpy(&(arr[i]), &data_8, BYTE * DATA_N_SPACE);
+}
+
+void get_protocol_3(unsigned char *arr, unsigned char prot, unsigned int lmesg) {
+    get_protocol_2(arr, prot, lmesg);
+
+    unsigned int data_9 = 1234;
+    unsigned int data_10 = 5678;
+    unsigned int data_11 = 9123;
+    unsigned int data_12 = 4567;
+    unsigned int data_13 = 8901;
+    unsigned int data_14 = 2345;
+
+    int i = 31;
+    memcpy(&(arr[i]), &data_9, BYTE * DATA_N_SPACE);
+    i += DATA_N_SPACE;
+    memcpy(&(arr[i]), &data_10, BYTE * DATA_N_SPACE);
+    i += DATA_N_SPACE;
+    memcpy(&(arr[i]), &data_11, BYTE * DATA_N_SPACE);
+    i += DATA_N_SPACE;
+    memcpy(&(arr[i]), &data_12, BYTE * DATA_N_SPACE);
+    i += DATA_N_SPACE;
+    memcpy(&(arr[i]), &data_13, BYTE * DATA_N_SPACE);
+    i += DATA_N_SPACE;
+    memcpy(&(arr[i]), &data_14, BYTE * DATA_N_SPACE);
 }
 
 // event handler for wifi events
@@ -172,7 +257,7 @@ esp_err_t connect_wifi()
 esp_err_t connect_tcp_server(void)
 {
     struct sockaddr_in serverInfo = {0};
-    char readBuffer[55] = {0};
+    char readBuffer[2] = {0};
 
     serverInfo.sin_family = AF_INET;
     serverInfo.sin_addr.s_addr = 0x0801a8c0;
@@ -195,66 +280,40 @@ esp_err_t connect_tcp_server(void)
     ESP_LOGI(TAG, "Connected to TCP server.");
 
     // CONECTADO A TCP
-
     bzero(readBuffer, sizeof(readBuffer));
+    unsigned char payload[55];
 
-    // int8_t originalArray[13] = {0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
-    // unsigned int n = 5000;
+    // PROTOCOL 0
+    bzero(payload, sizeof(payload));
+    get_protocol_0(payload, 0, 6);
 
-    // unsigned int payload[55];
-    //  n = (char *)n; //"5000"
-    //  payload[0] = (n >> 8) & 0xFF;
-    //  payload[1] = (n >> 0) & 0xFF;
-    char payload[55];
-
-    unsigned char device[2];
-    unsigned char mac[6];
-    unsigned char protocol[1];
-    split(15, device);
-    split(68465, mac);
-    split(0, protocol);
-    // int n = 123;
-    //  char *a = (char *)&n;
-    // payload[0] = (char *)25565;
-    // payload[2] = (char *)123;
-    // payload[8] = (char *)17;
-
-    for (int i = 0; i < 2; i++)
-        payload[i + 0] = device[i];
-    for (int i = 0; i < 6; i++)
-        payload[i + 2] = mac[i];
-    for (int i = 0; i < 1; i++)
-        payload[i + 8] = protocol[i];
-    /**
-    payload[0] = 25565;
-    payload[2] = 300; // MAC
-    payload[4] = 300;
-    payload[6] = 300;
-    payload[8] = 0;    // ID Protocol
-    payload[9] = 300;  // Msg len
-    payload[11] = 1;   // value
-    payload[12] = 50;  // battery
-    payload[13] = 105; // timestamp
-    */
-
-    // static const char *payload = "Message from ESP32 ";
     int err = send(sock, payload, sizeof(payload), 0);
-
     int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
-    ESP_LOGI(TAG, "HOLA");
-    /**
-    int r = read(sock, readBuffer, sizeof(readBuffer) - 1);
-    for (int i = 0; i < r; i++)
-    {
-        putchar(readBuffer[i]);
-    }
+    // PROTOCOL 1
+    bzero(readBuffer, sizeof(readBuffer));
+    bzero(payload, sizeof(payload));
+    get_protocol_1(payload, 1, 16);
 
-    if (strcmp(readBuffer, "HELLO") == 0)
-    {
-        ESP_LOGI(TAG, "WE DID IT!");
-    }
-    */
+    int err = send(sock, payload, sizeof(payload), 0);
+    int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+
+    // PROTOCOL 2
+    bzero(readBuffer, sizeof(readBuffer));
+    bzero(payload, sizeof(payload));
+    get_protocol_1(payload, 2, 20);
+
+    int err = send(sock, payload, sizeof(payload), 0);
+    int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+
+    // PROTOCOL 3
+    bzero(readBuffer, sizeof(readBuffer));
+    bzero(payload, sizeof(payload));
+    get_protocol_1(payload, 3, 44);
+
+    int err = send(sock, payload, sizeof(payload), 0);
+    int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+
     return TCP_SUCCESS;
 }
 
