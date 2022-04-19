@@ -47,7 +47,8 @@ static int s_retry_num = 0;
 static const char *TAG = "WIFI";
 /** FUNCTIONS **/
 
-void get_protocol_0(unsigned char *arr, unsigned char prot, unsigned int lmesg) {
+void get_protocol_0(unsigned char *arr, unsigned char prot, unsigned int lmesg)
+{
     unsigned int device = 9;
     unsigned long long int mac = 68465;
     unsigned char protocol = prot;
@@ -72,7 +73,8 @@ void get_protocol_0(unsigned char *arr, unsigned char prot, unsigned int lmesg) 
     memcpy(&(arr[i]), &data_3, BYTE * DATA_3_SPACE);
 }
 
-void get_protocol_1(unsigned char *arr, unsigned char prot, unsigned int lmesg) {
+void get_protocol_1(unsigned char *arr, unsigned char prot, unsigned int lmesg)
+{
     get_protocol_0(arr, prot, lmesg);
 
     unsigned int data_4 = 123;
@@ -90,7 +92,8 @@ void get_protocol_1(unsigned char *arr, unsigned char prot, unsigned int lmesg) 
     memcpy(&(arr[i]), &data_7, BYTE * DATA_N_SPACE);
 }
 
-void get_protocol_2(unsigned char *arr, unsigned char prot, unsigned int lmesg) {
+void get_protocol_2(unsigned char *arr, unsigned char prot, unsigned int lmesg)
+{
     get_protocol_1(arr, prot, lmesg);
 
     unsigned int data_8 = 12345;
@@ -99,7 +102,8 @@ void get_protocol_2(unsigned char *arr, unsigned char prot, unsigned int lmesg) 
     memcpy(&(arr[i]), &data_8, BYTE * DATA_N_SPACE);
 }
 
-void get_protocol_3(unsigned char *arr, unsigned char prot, unsigned int lmesg) {
+void get_protocol_3(unsigned char *arr, unsigned char prot, unsigned int lmesg)
+{
     get_protocol_2(arr, prot, lmesg);
 
     unsigned int data_9 = 1234;
@@ -290,7 +294,8 @@ esp_err_t connect_tcp_server(void)
     int err = send(sock, payload, sizeof(payload), 0);
     int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
-    // PROTOCOL 1
+    // DEEP SLEEP
+    //  PROTOCOL 1
     bzero(readBuffer, sizeof(readBuffer));
     bzero(payload, sizeof(payload));
     get_protocol_1(payload, 1, 16);
@@ -298,7 +303,8 @@ esp_err_t connect_tcp_server(void)
     int err = send(sock, payload, sizeof(payload), 0);
     int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
-    // PROTOCOL 2
+    // DEEP SLEEP
+    //  PROTOCOL 2
     bzero(readBuffer, sizeof(readBuffer));
     bzero(payload, sizeof(payload));
     get_protocol_1(payload, 2, 20);
@@ -306,7 +312,8 @@ esp_err_t connect_tcp_server(void)
     int err = send(sock, payload, sizeof(payload), 0);
     int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
-    // PROTOCOL 3
+    // DEEP SLEEP
+    //  PROTOCOL 3
     bzero(readBuffer, sizeof(readBuffer));
     bzero(payload, sizeof(payload));
     get_protocol_1(payload, 3, 44);

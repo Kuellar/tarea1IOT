@@ -2,6 +2,7 @@
 import sys
 import socket
 from datetime import datetime
+import struct
 
 HOST = '192.168.1.8'
 PORT = 5001
@@ -84,7 +85,8 @@ def write_line(file, data):
         n += DATA_4
 
         # Press - 4 bytes
-        file.write(','+str(int.from_bytes(data[n:n+DATA_5], byteorder=byteOrder)))
+        # file.write(','+str(int.from_bytes(data[n:n+DATA_5], byteorder=byteOrder)))
+        file.write(','+str(struct.unpack('f',data[n:n+DATA_5])[0]))
         n += DATA_5
 
         # Hum - 1 bytes
@@ -92,37 +94,45 @@ def write_line(file, data):
         n += DATA_6
 
         # Co - 4 bytes
-        file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+        # file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+        file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
         n += DATA_N
 
         if protocol != 1:
             # RMS - 4 bytes
-            file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+            #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+            file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
             n += DATA_N
 
             if protocol != 2:
                 # Amp x - 4 bytes
-                file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
                 n += DATA_N
 
                 # Frec x - 4 bytes
-                file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
                 n += DATA_N
 
                 # Amp y - 4 bytes
-                file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
                 n += DATA_N
 
                 # Frec y - 4 bytes
-                file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
                 n += DATA_N
 
                 # Amp z - 4 bytes
-                file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
                 n += DATA_N
 
                 # Frec z - 4 bytes
-                file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
 
     file.write('\n')
 
