@@ -2,6 +2,8 @@
 import sys
 import socket
 from datetime import datetime
+import struct
+import threading
 
 HOST = '127.0.0.1'
 PORT = 5001
@@ -23,6 +25,10 @@ DATA_8 = 6400
 DATA_9 = 6400
 DATA_10 = 6400
 
+BYTE_ORDER = 'little'
+
+STOP = False
+
 def set_file(file):
     try:
         f = open(file, 'r')
@@ -38,12 +44,16 @@ def set_file(file):
         f.close()
 
 def write_line(file, data):
-    n = 0
-    # print(data)
+    protocol = int.from_bytes(data[8:8+ID_PROTOCOL], byteorder=BYTE_ORDER)
 
+    if protocol != 4:
+        print("ERROR: INVALID DATA - THE PROTOCOL IS NOT VALID")
+    # print("Data received: PROTOCOL ", protocol)
+
+    n = 0
     ###### HEADER ######
     # ID Device - 2 bytes
-    file.write(str(int.from_bytes(data[n:n+ID_DEVICE], byteorder='little')))
+    file.write(str(int.from_bytes(data[n:n+ID_DEVICE], byteorder=BYTE_ORDER)))
     n += ID_DEVICE
 
     # MAC - 6 bytes
@@ -56,70 +66,91 @@ def write_line(file, data):
     n += MAC
 
     # ID Protocol - 1 bytes
-    protocol = int.from_bytes(data[n:n+ID_PROTOCOL], byteorder='little')
     file.write(','+str(protocol))
     n += ID_PROTOCOL
 
     # leng msg - 2 bytes
-    file.write(','+str(int.from_bytes(data[n:n+LENG_MSG], byteorder='little')))
+    file.write(','+str(int.from_bytes(data[n:n+LENG_MSG], byteorder=BYTE_ORDER)))
     n += LENG_MSG
 
     ###### DATA ######
 
     # Val: 1 - 1 bytes
-    file.write(','+str(int.from_bytes(data[n:n+DATA_1], byteorder='little')))
+    file.write(','+str(int.from_bytes(data[n:n+DATA_1], byteorder=BYTE_ORDER)))
     n += DATA_1
 
     # Batt_level - 1 bytes
-    file.write(','+str(int.from_bytes(data[n:n+DATA_2], byteorder='little')))
+    file.write(','+str(int.from_bytes(data[n:n+DATA_2], byteorder=BYTE_ORDER)))
     n += DATA_2
 
     # Timestamp - 4 bytes
-    time = datetime.fromtimestamp(int.from_bytes(data[n:n+DATA_3], byteorder='little'))
+    time = datetime.fromtimestamp(int.from_bytes(data[n:n+DATA_3], byteorder=BYTE_ORDER))
     file.write(','+time.strftime('%d/%m/%Y %H:%M:%S'))
     n += DATA_3
 
     # Temp - 1 bytes
-    file.write(','+str(int.from_bytes(data[n:n+DATA_4], byteorder='little')))
+    file.write(','+str(int.from_bytes(data[n:n+DATA_4], byteorder=BYTE_ORDER)))
     n += DATA_4
 
     # Press - 4 bytes
-    file.write(','+str(int.from_bytes(data[n:n+DATA_5], byteorder='little')))
+    # file.write(','+str(int.from_bytes(data[n:n+DATA_5], byteorder=BYTE_ORDER)))
+    file.write(','+str(struct.unpack('f',data[n:n+DATA_5])[0]))
     n += DATA_5
 
     # Hum - 1 bytes
-    file.write(','+str(int.from_bytes(data[n:n+DATA_6], byteorder='little')))
+    file.write(','+str(int.from_bytes(data[n:n+DATA_6], byteorder=BYTE_ORDER)))
     n += DATA_6
 
     # Co - 4 bytes
-    file.write(','+str(int.from_bytes(data[n:n+DATA_7], byteorder='little')))
+    # file.write(','+str(int.from_bytes(data[n:n+DATA_7], byteorder=BYTE_ORDER)))
+    file.write(','+str(struct.unpack('f',data[n:n+DATA_7])[0]))
     n += DATA_7
 
     # Acc_x
-    file.write(','+str(int.from_bytes(data[n:n+DATA_8], byteorder='little')))
+    file.write(','+str(int.from_bytes(data[n:n+DATA_8], byteorder=BYTE_ORDER)))
     n += DATA_8
 
     # Acc_y
-    file.write(','+str(int.from_bytes(data[n:n+DATA_9], byteorder='little')))
+    file.write(','+str(int.from_bytes(data[n:n+DATA_9], byteorder=BYTE_ORDER)))
     n += DATA_9
 
     # Acc_z
-    file.write(','+str(int.from_bytes(data[n:n+DATA_10], byteorder='little')))
+    file.write(','+str(int.from_bytes(data[n:n+DATA_10], byteorder=BYTE_ORDER)))
     n += DATA_10
 
     file.write('\n')
 
-def server(port=PORT, file=FILENAME, host=HOST):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind((host, port))
-    set_file(file)
-
+def connection(port, file, host):
+    global STOP
     while True:
-        f = open(file, 'a')
-        data, _ = s.recvfrom(11+19216)
-        write_line(f, data)
-        f.close()
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.bind((host, port))
+            while True:
+                if STOP:
+                    return
+                f = open(file, 'a')
+                data, _ = s.recvfrom(11+19216)
+                write_line(f, data)
+                f.close()
+        except Exception as e:
+            print("Exception: ", e)
+            print("Rebooting server...")
 
+def server(port=PORT, file=FILENAME, host=HOST):
+    global STOP
+    set_file(file)
+    print("HOST: ", host)
+    print("PORT: ", port)
+    print("Type stop to quit the program")
+    x = threading.Thread(target=connection, args=(port,file,host,))
+    x.start()
+    while True:
+        inp = input("")
+        if inp.lower() in ["exit", "quit", "0", "stop"]:
+            STOP = True
+            break
+    x.join()
 
 if __name__ == '__main__':
     arg = sys.argv
