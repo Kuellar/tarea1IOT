@@ -21,7 +21,7 @@ DATA_5 = 4
 DATA_6 = 1
 DATA_N = 4
 
-byteOrder = 'little'
+BYTE_ORDER = 'little'
 
 def set_file(file):
     try:
@@ -38,12 +38,17 @@ def set_file(file):
         f.close()
 
 def write_line(file, data):
-    n = 0
-    print(data)
+    protocol = int.from_bytes(data[8:8+ID_PROTOCOL], byteorder=BYTE_ORDER)
+    valid_protocol = [0, 1, 2, 3]
 
+    if protocol not in valid_protocol:
+        print("ERROR: INVALID DATA - THE PROTOCOL IS NOT VALID")
+    print("Data received: PROTOCOL ", protocol)
+
+    n = 0
     ###### HEADER ######
     # ID Device - 2 bytes
-    file.write(str(int.from_bytes(data[n:n+ID_DEVICE], byteorder=byteOrder)))
+    file.write(str(int.from_bytes(data[n:n+ID_DEVICE], byteorder=BYTE_ORDER)))
     n += ID_DEVICE
 
     # MAC - 6 bytes
@@ -56,104 +61,111 @@ def write_line(file, data):
     n += MAC
 
     # ID Protocol - 1 bytes
-    protocol = int.from_bytes(data[n:n+ID_PROTOCOL], byteorder=byteOrder)
     file.write(','+str(protocol))
     n += ID_PROTOCOL
 
     # leng msg - 2 bytes
-    file.write(','+str(int.from_bytes(data[n:n+LENG_MSG], byteorder=byteOrder)))
+    file.write(','+str(int.from_bytes(data[n:n+LENG_MSG], byteorder=BYTE_ORDER)))
     n += LENG_MSG
 
     ###### DATA ######
-
     # Val: 1 - 1 bytes
-    file.write(','+str(int.from_bytes(data[n:n+DATA_1], byteorder=byteOrder)))
+    file.write(','+str(int.from_bytes(data[n:n+DATA_1], byteorder=BYTE_ORDER)))
     n += DATA_1
 
     # Batt_level - 1 bytes
-    file.write(','+str(int.from_bytes(data[n:n+DATA_2], byteorder=byteOrder)))
+    file.write(','+str(int.from_bytes(data[n:n+DATA_2], byteorder=BYTE_ORDER)))
     n += DATA_2
 
     # Timestamp - 4 bytes
-    time = datetime.fromtimestamp(int.from_bytes(data[n:n+DATA_3], byteorder=byteOrder))
+    time = datetime.fromtimestamp(int.from_bytes(data[n:n+DATA_3], byteorder=BYTE_ORDER))
     file.write(','+time.strftime('%d/%m/%Y %H:%M:%S'))
     n += DATA_3
 
-    if protocol != 0:
+    if protocol > 0:
         # Temp - 1 bytes
-        file.write(','+str(int.from_bytes(data[n:n+DATA_4], byteorder=byteOrder)))
+        file.write(','+str(int.from_bytes(data[n:n+DATA_4], byteorder=BYTE_ORDER)))
         n += DATA_4
 
         # Press - 4 bytes
-        # file.write(','+str(int.from_bytes(data[n:n+DATA_5], byteorder=byteOrder)))
+        # file.write(','+str(int.from_bytes(data[n:n+DATA_5], byteorder=BYTE_ORDER)))
         file.write(','+str(struct.unpack('f',data[n:n+DATA_5])[0]))
         n += DATA_5
 
         # Hum - 1 bytes
-        file.write(','+str(int.from_bytes(data[n:n+DATA_6], byteorder=byteOrder)))
+        file.write(','+str(int.from_bytes(data[n:n+DATA_6], byteorder=BYTE_ORDER)))
         n += DATA_6
 
         # Co - 4 bytes
-        # file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+        # file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=BYTE_ORDER)))
         file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
         n += DATA_N
 
-        if protocol != 1:
+        if protocol > 1:
             # RMS - 4 bytes
-            #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+            #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=BYTE_ORDER)))
             file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
             n += DATA_N
 
-            if protocol != 2:
+            if protocol > 2:
                 # Amp x - 4 bytes
-                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=BYTE_ORDER)))
                 file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
                 n += DATA_N
 
                 # Frec x - 4 bytes
-                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=BYTE_ORDER)))
                 file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
                 n += DATA_N
 
                 # Amp y - 4 bytes
-                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=BYTE_ORDER)))
                 file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
                 n += DATA_N
 
                 # Frec y - 4 bytes
-                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=BYTE_ORDER)))
                 file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
                 n += DATA_N
 
                 # Amp z - 4 bytes
-                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=BYTE_ORDER)))
                 file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
                 n += DATA_N
 
                 # Frec z - 4 bytes
-                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=byteOrder)))
+                #file.write(','+str(int.from_bytes(data[n:n+DATA_N], byteorder=BYTE_ORDER)))
                 file.write(','+str(struct.unpack('f',data[n:n+DATA_N])[0]))
 
     file.write('\n')
 
 def server(port=PORT, file=FILENAME, host=HOST):
+    print("HOST: ", host)
+    print("PORT: ", port)
+    set_file(file)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((host, port))
     s.listen(1)  # 1 accepted connections
-    conn, addr = s.accept()  # waits for a new connection
-    set_file(file)
-
-    print('Client connected: ', addr)
     while True:
-        f = open(file, 'a')
-        data = conn.recv(11+44)  # HEADER: 11 - DATA: 44
-        if not data:
-            break
-        conn.sendall(b'0')
-        write_line(f, data)
-        f.close()
-    conn.close()
-    
+        try:
+            conn, addr = s.accept()  # waits for a new connection
+            print('Client connected: ', addr)
+            while True:
+                data = conn.recv(11+44)  # HEADER: 11 - DATA: 44
+                if not data:
+                    break
+                if len(data) <= 2:
+                    break
+                conn.sendall(b'0')
+                f = open(file, 'a')
+                write_line(f, data)
+                f.close()
+            conn.close()
+            print("Client disconected: ", addr)
+        except Exception as e:
+            print("Client disconnected prematurely")
+            print("Exception: ", e)
+
 
 if __name__ == '__main__':
     arg = sys.argv
