@@ -257,8 +257,8 @@ esp_err_t connect_wifi()
 }
 
 // connect to the server and return the result
-
-esp_err_t connect_tcp_server(void)
+// esp_err_t connect_tcp_server(void)
+esp_err_t connect_tcp_server(unsigned char *payload)
 {
     struct sockaddr_in serverInfo = {0};
     char readBuffer[2] = {0};
@@ -285,45 +285,41 @@ esp_err_t connect_tcp_server(void)
 
     // CONECTADO A TCP
     bzero(readBuffer, sizeof(readBuffer));
-    unsigned char payload[55];
-
-    // PROTOCOL 0
-    bzero(payload, sizeof(payload));
-    get_protocol_0(payload, 0, 6);
 
     int err = send(sock, payload, sizeof(payload), 0);
     int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
-    // DEEP SLEEP
-    //  PROTOCOL 1
-    bzero(readBuffer, sizeof(readBuffer));
-    bzero(payload, sizeof(payload));
-    get_protocol_1(payload, 1, 16);
+    // // DEEP SLEEP
+    // //  PROTOCOL 1
+    // bzero(readBuffer, sizeof(readBuffer));
+    // bzero(payload, sizeof(payload));
+    // get_protocol_1(payload, 1, 16);
 
-    int err = send(sock, payload, sizeof(payload), 0);
-    int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+    // int err = send(sock, payload, sizeof(payload), 0);
+    // int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
-    // DEEP SLEEP
-    //  PROTOCOL 2
-    bzero(readBuffer, sizeof(readBuffer));
-    bzero(payload, sizeof(payload));
-    get_protocol_1(payload, 2, 20);
+    // // DEEP SLEEP
+    // //  PROTOCOL 2
+    // bzero(readBuffer, sizeof(readBuffer));
+    // bzero(payload, sizeof(payload));
+    // get_protocol_1(payload, 2, 20);
 
-    int err = send(sock, payload, sizeof(payload), 0);
-    int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+    // int err = send(sock, payload, sizeof(payload), 0);
+    // int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
-    // DEEP SLEEP
-    //  PROTOCOL 3
-    bzero(readBuffer, sizeof(readBuffer));
-    bzero(payload, sizeof(payload));
-    get_protocol_1(payload, 3, 44);
+    // // DEEP SLEEP
+    // //  PROTOCOL 3
+    // bzero(readBuffer, sizeof(readBuffer));
+    // bzero(payload, sizeof(payload));
+    // get_protocol_1(payload, 3, 44);
 
-    int err = send(sock, payload, sizeof(payload), 0);
-    int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+    // int err = send(sock, payload, sizeof(payload), 0);
+    // int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
     return TCP_SUCCESS;
 }
 
+/*
 void app_main(void)
 {
     esp_err_t status = WIFI_FAILURE;
@@ -350,4 +346,55 @@ void app_main(void)
         ESP_LOGI(TAG, "Failed to connect to remote server, dying...");
         return;
     }
+}
+*/
+
+void app_main(void)
+{
+    esp_err_t status = WIFI_FAILURE;
+
+    // initialize storage
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+
+    // connect to wireless AP
+    status = connect_wifi();
+    if (WIFI_SUCCESS != status)
+    {
+        ESP_LOGI(TAG, "Failed to associate to AP, dying...");
+        return;
+    }
+
+    unsigned char payload[55];
+
+
+    // PROTOCOL 0
+    bzero(payload, sizeof(payload));
+    get_protocol_0(payload, 0, 6);
+    status = connect_tcp_server(payload);
+    if (TCP_SUCCESS != status)
+    {
+        ESP_LOGI(TAG, "Failed to connect to remote server, dying...");
+        return;
+    }
+    // DEEP SLEEP
+
+    // PROTOCOL 1
+    bzero(payload, sizeof(payload));
+    get_protocol_1(payload, 1, 16);
+    status = connect_tcp_server(payload);
+    if (TCP_SUCCESS != status)
+    {
+        ESP_LOGI(TAG, "Failed to connect to remote server, dying...");
+        return;
+    }
+    // DEEP SLEEP
+
+    // ... protocol 2 ... protocol 3 ...
+
 }
