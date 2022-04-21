@@ -8,6 +8,9 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_sleep.h"
+#include <arpa/inet.h>
+#include <iostream>
+#include <string.h>
 
 #include "lwip/err.h"
 #include "lwip/sockets.h"
@@ -16,6 +19,15 @@
 #include "lwip/dns.h"
 #include <time.h>
 #include <math.h>
+
+/** WIFI **/
+#define WIFI_SSID "ipulsera"
+#define WIFI_PASS "holaaa11"
+
+/** SERVER TCP **/
+
+#define TCP_HOST 0x0801a8c0
+#define TCP_PORT 5001
 
 /** DEFINES **/
 #define WIFI_SUCCESS 1 << 0
@@ -220,8 +232,8 @@ esp_err_t connect_wifi()
     /** START THE WIFI DRIVER **/
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = "SSID",     // ipulsera
-            .password = "PASS", // holaaa11
+            .ssid = WIFI_SSID,
+            .password = WIFI_PASS,
             .threshold.authmode = WIFI_AUTH_WPA2_PSK,
             .pmf_cfg = {
                 .capable = true,
@@ -274,15 +286,14 @@ esp_err_t connect_wifi()
 }
 
 // connect to the server and return the result
-
 esp_err_t connect_tcp_server(void)
 {
     struct sockaddr_in serverInfo = {0};
     char readBuffer[2] = {0};
 
     serverInfo.sin_family = AF_INET;
-    serverInfo.sin_addr.s_addr = 0x0801a8c0;
-    serverInfo.sin_port = htons(5001);
+    serverInfo.sin_addr.s_addr = TCP_HOST;
+    serverInfo.sin_port = htons(TCP_PORT);
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0)
@@ -346,47 +357,6 @@ esp_err_t connect_tcp_server(void)
         close(sock);
         esp_deep_sleep(1e6 * 5);
     }
-
-    // ESP_LOGI(TAG, "A mimir 1");
-
-    // // esp_sleep_enable_timer_wakeup(wakeup_time_sec * 2000); //* 1.000
-    // // esp_deep_sleep_start();
-    // ESP_LOGI(TAG, "A wakeup 1");
-
-    // //  PROTOCOL 1
-    // bzero(readBuffer, sizeof(readBuffer));
-    // bzero(payload, sizeof(payload));
-    // get_protocol_1(payload, 1, 16);
-
-    // err = send(sock, payload, sizeof(payload), 0);
-    // len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
-
-    // // ESP_LOGI(TAG, "A mimir 2");
-    // // esp_sleep_enable_timer_wakeup(wakeup_time_sec * 2000); //* 1.000
-    // // esp_deep_sleep_start();
-    // // ESP_LOGI(TAG, "A wakeup 2");
-
-    // //  PROTOCOL 2
-    // bzero(readBuffer, sizeof(readBuffer));
-    // bzero(payload, sizeof(payload));
-    // get_protocol_2(payload, 2, 20);
-
-    // err = send(sock, payload, sizeof(payload), 0);
-    // len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
-
-    // // ESP_LOGI(TAG, "A mimir 3");
-    // // esp_sleep_enable_timer_wakeup(wakeup_time_sec * 2000); //* 1.000
-    // // esp_deep_sleep_start();
-    // // ESP_LOGI(TAG, "A wakeup 3");
-
-    // //  PROTOCOL 3
-    // bzero(readBuffer, sizeof(readBuffer));
-    // bzero(payload, sizeof(payload));
-    // get_protocol_3(payload, 3, 44);
-
-    // err = send(sock, payload, sizeof(payload), 0);
-    // len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
-
     return TCP_SUCCESS;
 }
 
