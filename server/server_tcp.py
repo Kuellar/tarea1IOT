@@ -6,9 +6,8 @@ import struct
 from datetime import datetime
 
 
-HOST = '192.168.1.8'
-PORT = 5001
-FILENAME = 'tcp_log.csv'
+
+
 HEADER_CSV = 'ID Device,MAC,ID Protocol,leng msg,Val: 1,Batt_level,Timestamp,Temp,Press,Hum,Co,RMS,Amp x,Frec x,Amp y,Frec y,Amp z,Frec z'
 # LENGTH
 ID_DEVICE = 2
@@ -145,7 +144,7 @@ def write_line(file, data):
 
     file.write('\n')
 
-def server(port=PORT, file=FILENAME, host=HOST):
+def server(port=5001, file='tcp_log.csv', host='192.168.1.8'):
     print("HOST: ", host)
     print("PORT: ", port)
     set_file(file)
