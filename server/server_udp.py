@@ -5,7 +5,7 @@ from datetime import datetime
 import struct
 import threading
 
-HOST = '127.0.0.1'
+HOST = '192.168.1.8'
 PORT = 5001
 FILENAME = 'udp_log.csv'
 HEADER_CSV = 'ID Device,MAC,ID Protocol,leng msg,Val: 1,Batt_level,Timestamp,Temp,Press,Hum,Co,Acc_x,Acc_y,Acc_z'
@@ -84,8 +84,8 @@ def write_line(file, data):
     n += DATA_2
 
     # Timestamp - 4 bytes
-    time = datetime.fromtimestamp(int.from_bytes(data[n:n+DATA_3], byteorder=BYTE_ORDER))
-    file.write(','+time.strftime('%d/%m/%Y %H:%M:%S'))
+    now = datetime.now()
+    file.write(','+now.strftime('%d/%m/%Y %H:%M:%S'))
     n += DATA_3
 
     # Temp - 1 bytes
@@ -107,15 +107,21 @@ def write_line(file, data):
     n += DATA_7
 
     # Acc_x
-    file.write(','+str(int.from_bytes(data[n:n+DATA_8], byteorder=BYTE_ORDER)))
+    file.write(',')
+    for i in range(1600):
+        file.write(str(struct.unpack('f',data[n+i*4:n+(i+1)*4])[0])+'_')
     n += DATA_8
 
     # Acc_y
-    file.write(','+str(int.from_bytes(data[n:n+DATA_9], byteorder=BYTE_ORDER)))
+    file.write(',')
+    for i in range(1600):
+        file.write(str(struct.unpack('f',data[n+i*4:n+(i+1)*4])[0])+'_')
     n += DATA_9
 
     # Acc_z
-    file.write(','+str(int.from_bytes(data[n:n+DATA_10], byteorder=BYTE_ORDER)))
+    file.write(',')
+    for i in range(1600):
+        file.write(str(struct.unpack('f',data[n+i*4:n+(i+1)*4])[0])+'_')
     n += DATA_10
 
     file.write('\n')
@@ -129,10 +135,12 @@ def connection(port, file, host):
             while True:
                 if STOP:
                     return
-                f = open(file, 'a')
+                
                 data, _ = s.recvfrom(11+19216)
-                write_line(f, data)
-                f.close()
+                if len(data == 11+19216): # Pérdida de paquetes
+                    f = open(file, 'a')
+                    write_line(f, data)
+                    f.close()
         except Exception as e:
             print("Exception: ", e)
             print("Rebooting server...")

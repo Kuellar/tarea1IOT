@@ -7,12 +7,15 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
+#include "esp_sleep.h"
 
 #include "lwip/err.h"
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
+#include <time.h>
+#include <math.h>
 
 /** DEFINES **/
 #define WIFI_SUCCESS 1 << 0
@@ -37,6 +40,8 @@
 
 /** GLOBALS **/
 
+RTC_DATA_ATTR int protocolo_actual = 0;
+
 // event group to contain status information
 static EventGroupHandle_t wifi_event_group;
 
@@ -47,15 +52,19 @@ static int s_retry_num = 0;
 static const char *TAG = "WIFI";
 /** FUNCTIONS **/
 
+/** VARIABLES GLOBALES */
+
 void get_protocol_0(unsigned char *arr, unsigned char prot, unsigned int lmesg)
 {
+
     unsigned int device = 9;
-    unsigned long long int mac = 68465;
+    unsigned long long mac;
+    esp_read_mac(&mac, ESP_MAC_WIFI_STA);
     unsigned char protocol = prot;
     unsigned int leng_mesg = lmesg;
     unsigned int data_1 = 1;
-    unsigned int data_2 = 50;
-    time_t data_3 = time(NULL);
+    unsigned int data_2 = esp_random() % 100;
+    time_t data_3 = 1823761823;
 
     int i = 0;
     memcpy(arr, &device, BYTE * ID_DEVICE_SPACE);
@@ -77,10 +86,10 @@ void get_protocol_1(unsigned char *arr, unsigned char prot, unsigned int lmesg)
 {
     get_protocol_0(arr, prot, lmesg);
 
-    unsigned int data_4 = 123;
-    unsigned int data_5 = 12345;
-    unsigned int data_6 = 123;
-    unsigned int data_7 = 12345;
+    unsigned int data_4 = esp_random() % 25 + 5;
+    float data_5 = ((float)esp_random() / UINT32_MAX) * 200 + 1000;
+    unsigned int data_6 = esp_random() % 50 + 30;
+    float data_7 = ((float)esp_random() / UINT32_MAX) * 170 + 30;
 
     int i = 17;
     memcpy(&(arr[i]), &data_4, BYTE * DATA_4_SPACE);
@@ -96,35 +105,43 @@ void get_protocol_2(unsigned char *arr, unsigned char prot, unsigned int lmesg)
 {
     get_protocol_1(arr, prot, lmesg);
 
-    unsigned int data_8 = 12345;
+    float Amp_x = ((float)esp_random() / UINT32_MAX) * (0.12 - 0.0059) + 0.0059;
+    float Amp_y = ((float)esp_random() / UINT32_MAX) * (0.11 - 0.0041) + 0.0041;
+    float Amp_z = ((float)esp_random() / UINT32_MAX) * (0.15 - 0.008) + 0.008;
+
+    float RMS = sqrtf(powf(Amp_x, 2) + powf(Amp_y, 2) + powf(Amp_z, 2));
 
     int i = 27;
-    memcpy(&(arr[i]), &data_8, BYTE * DATA_N_SPACE);
+    memcpy(&(arr[i]), &RMS, BYTE * DATA_N_SPACE);
 }
 
 void get_protocol_3(unsigned char *arr, unsigned char prot, unsigned int lmesg)
 {
-    get_protocol_2(arr, prot, lmesg);
+    get_protocol_1(arr, prot, lmesg);
 
-    unsigned int data_9 = 1234;
-    unsigned int data_10 = 5678;
-    unsigned int data_11 = 9123;
-    unsigned int data_12 = 4567;
-    unsigned int data_13 = 8901;
-    unsigned int data_14 = 2345;
+    float Amp_x = ((float)esp_random() / UINT32_MAX) * (0.12 - 0.0059) + 0.0059;
+    float Frec_x = ((float)esp_random() / UINT32_MAX) * (31 - 29) + 29;
+    float Amp_y = ((float)esp_random() / UINT32_MAX) * (0.11 - 0.0041) + 0.0041;
+    float Frec_y = ((float)esp_random() / UINT32_MAX) * (61 - 59) + 59;
+    float Amp_z = ((float)esp_random() / UINT32_MAX) * (0.15 - 0.008) + 0.008;
+    float Frec_z = ((float)esp_random() / UINT32_MAX) * (91 - 89) + 89;
 
-    int i = 31;
-    memcpy(&(arr[i]), &data_9, BYTE * DATA_N_SPACE);
+    float RMS = sqrtf(powf(Amp_x, 2) + powf(Amp_y, 2) + powf(Amp_z, 2));
+
+    int i = 27;
+    memcpy(&(arr[i]), &RMS, BYTE * DATA_N_SPACE);
     i += DATA_N_SPACE;
-    memcpy(&(arr[i]), &data_10, BYTE * DATA_N_SPACE);
+    memcpy(&(arr[i]), &Amp_x, BYTE * DATA_N_SPACE);
     i += DATA_N_SPACE;
-    memcpy(&(arr[i]), &data_11, BYTE * DATA_N_SPACE);
+    memcpy(&(arr[i]), &Frec_x, BYTE * DATA_N_SPACE);
     i += DATA_N_SPACE;
-    memcpy(&(arr[i]), &data_12, BYTE * DATA_N_SPACE);
+    memcpy(&(arr[i]), &Amp_y, BYTE * DATA_N_SPACE);
     i += DATA_N_SPACE;
-    memcpy(&(arr[i]), &data_13, BYTE * DATA_N_SPACE);
+    memcpy(&(arr[i]), &Frec_y, BYTE * DATA_N_SPACE);
     i += DATA_N_SPACE;
-    memcpy(&(arr[i]), &data_14, BYTE * DATA_N_SPACE);
+    memcpy(&(arr[i]), &Amp_z, BYTE * DATA_N_SPACE);
+    i += DATA_N_SPACE;
+    memcpy(&(arr[i]), &Frec_z, BYTE * DATA_N_SPACE);
 }
 
 // event handler for wifi events
@@ -203,8 +220,8 @@ esp_err_t connect_wifi()
     /** START THE WIFI DRIVER **/
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = "Lucas",        // ipulsera
-            .password = "asrs7mik", // holaaa11
+            .ssid = "SSID",     // ipulsera
+            .password = "PASS", // holaaa11
             .threshold.authmode = WIFI_AUTH_WPA2_PSK,
             .pmf_cfg = {
                 .capable = true,
@@ -257,8 +274,8 @@ esp_err_t connect_wifi()
 }
 
 // connect to the server and return the result
-// esp_err_t connect_tcp_server(void)
-esp_err_t connect_tcp_server(unsigned char *payload)
+
+esp_err_t connect_tcp_server(void)
 {
     struct sockaddr_in serverInfo = {0};
     char readBuffer[2] = {0};
@@ -283,43 +300,96 @@ esp_err_t connect_tcp_server(unsigned char *payload)
 
     ESP_LOGI(TAG, "Connected to TCP server.");
 
-    // CONECTADO A TCP
-    bzero(readBuffer, sizeof(readBuffer));
+    for (;;)
+    {
+        // CONECTADO A TCP
+        bzero(readBuffer, sizeof(readBuffer));
+        unsigned char payload[55];
 
-    int err = send(sock, payload, sizeof(payload), 0);
-    int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+        bzero(payload, sizeof(payload));
+        // PROTOCOL 0
 
-    // // DEEP SLEEP
+        switch (protocolo_actual)
+        {
+        case 0:
+            ESP_LOGI(TAG, "Protocolo 0");
+            get_protocol_0(payload, 0, 6);
+            protocolo_actual = 1;
+            break;
+        case 1:
+            ESP_LOGI(TAG, "Protocolo 1");
+            get_protocol_1(payload, 1, 16);
+            protocolo_actual = 2;
+            break;
+        case 2:
+            ESP_LOGI(TAG, "Protocolo 2");
+            get_protocol_2(payload, 2, 20);
+            protocolo_actual = 3;
+            break;
+        case 3:
+            ESP_LOGI(TAG, "Protocolo 3");
+            get_protocol_3(payload, 3, 44);
+            protocolo_actual = 4;
+            break;
+        }
+
+        int err = send(sock, payload, sizeof(payload), 0);
+        int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+
+        if (protocolo_actual == 4)
+        {
+            int vacio = send(sock, 0, 0, 0); // Corta la conexion
+            break;
+        }
+
+        shutdown(sock, 0);
+        close(sock);
+        esp_deep_sleep(1e6 * 5);
+    }
+
+    // ESP_LOGI(TAG, "A mimir 1");
+
+    // // esp_sleep_enable_timer_wakeup(wakeup_time_sec * 2000); //* 1.000
+    // // esp_deep_sleep_start();
+    // ESP_LOGI(TAG, "A wakeup 1");
+
     // //  PROTOCOL 1
     // bzero(readBuffer, sizeof(readBuffer));
     // bzero(payload, sizeof(payload));
     // get_protocol_1(payload, 1, 16);
 
-    // int err = send(sock, payload, sizeof(payload), 0);
-    // int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+    // err = send(sock, payload, sizeof(payload), 0);
+    // len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
-    // // DEEP SLEEP
+    // // ESP_LOGI(TAG, "A mimir 2");
+    // // esp_sleep_enable_timer_wakeup(wakeup_time_sec * 2000); //* 1.000
+    // // esp_deep_sleep_start();
+    // // ESP_LOGI(TAG, "A wakeup 2");
+
     // //  PROTOCOL 2
     // bzero(readBuffer, sizeof(readBuffer));
     // bzero(payload, sizeof(payload));
-    // get_protocol_1(payload, 2, 20);
+    // get_protocol_2(payload, 2, 20);
 
-    // int err = send(sock, payload, sizeof(payload), 0);
-    // int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+    // err = send(sock, payload, sizeof(payload), 0);
+    // len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
-    // // DEEP SLEEP
+    // // ESP_LOGI(TAG, "A mimir 3");
+    // // esp_sleep_enable_timer_wakeup(wakeup_time_sec * 2000); //* 1.000
+    // // esp_deep_sleep_start();
+    // // ESP_LOGI(TAG, "A wakeup 3");
+
     // //  PROTOCOL 3
     // bzero(readBuffer, sizeof(readBuffer));
     // bzero(payload, sizeof(payload));
-    // get_protocol_1(payload, 3, 44);
+    // get_protocol_3(payload, 3, 44);
 
-    // int err = send(sock, payload, sizeof(payload), 0);
-    // int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+    // err = send(sock, payload, sizeof(payload), 0);
+    // len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
 
     return TCP_SUCCESS;
 }
 
-/*
 void app_main(void)
 {
     esp_err_t status = WIFI_FAILURE;
@@ -346,55 +416,4 @@ void app_main(void)
         ESP_LOGI(TAG, "Failed to connect to remote server, dying...");
         return;
     }
-}
-*/
-
-void app_main(void)
-{
-    esp_err_t status = WIFI_FAILURE;
-
-    // initialize storage
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
-    {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
-
-    // connect to wireless AP
-    status = connect_wifi();
-    if (WIFI_SUCCESS != status)
-    {
-        ESP_LOGI(TAG, "Failed to associate to AP, dying...");
-        return;
-    }
-
-    unsigned char payload[55];
-
-
-    // PROTOCOL 0
-    bzero(payload, sizeof(payload));
-    get_protocol_0(payload, 0, 6);
-    status = connect_tcp_server(payload);
-    if (TCP_SUCCESS != status)
-    {
-        ESP_LOGI(TAG, "Failed to connect to remote server, dying...");
-        return;
-    }
-    // DEEP SLEEP
-
-    // PROTOCOL 1
-    bzero(payload, sizeof(payload));
-    get_protocol_1(payload, 1, 16);
-    status = connect_tcp_server(payload);
-    if (TCP_SUCCESS != status)
-    {
-        ESP_LOGI(TAG, "Failed to connect to remote server, dying...");
-        return;
-    }
-    // DEEP SLEEP
-
-    // ... protocol 2 ... protocol 3 ...
-
 }

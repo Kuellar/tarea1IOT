@@ -3,6 +3,8 @@ import sys
 import socket
 from datetime import datetime
 import struct
+from datetime import datetime
+
 
 HOST = '192.168.1.8'
 PORT = 5001
@@ -78,8 +80,12 @@ def write_line(file, data):
     n += DATA_2
 
     # Timestamp - 4 bytes
-    time = datetime.fromtimestamp(int.from_bytes(data[n:n+DATA_3], byteorder=BYTE_ORDER))
-    file.write(','+time.strftime('%d/%m/%Y %H:%M:%S'))
+    # time = datetime.fromtimestamp(int.from_bytes(data[n:n+DATA_3], byteorder=BYTE_ORDER))
+    # file.write(','+time.strftime('%d/%m/%Y %H:%M:%S'))
+
+    now = datetime.now()
+    file.write(','+now.strftime('%d/%m/%Y %H:%M:%S'))
+
     n += DATA_3
 
     if protocol > 0:
@@ -152,6 +158,7 @@ def server(port=PORT, file=FILENAME, host=HOST):
             print('Client connected: ', addr)
             while True:
                 data = conn.recv(11+44)  # HEADER: 11 - DATA: 44
+                print(data)
                 if not data:
                     break
                 if len(data) <= 2:
@@ -162,9 +169,8 @@ def server(port=PORT, file=FILENAME, host=HOST):
                 f.close()
             conn.close()
             print("Client disconected: ", addr)
-        except Exception as e:
-            print("Client disconnected prematurely")
-            print("Exception: ", e)
+        except:
+            print("Client disconnected by deep sleep")
 
 
 if __name__ == '__main__':
