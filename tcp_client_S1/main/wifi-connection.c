@@ -26,7 +26,7 @@
 
 /** SERVER TCP **/
 
-#define TCP_HOST 0x0801a8c0
+#define TCP_HOST 0x0104A8C0
 #define TCP_PORT 5001
 
 /** DEFINES **/

@@ -135,7 +135,7 @@ def connection(port, file, host):
                     return
                 
                 data, _ = s.recvfrom(11+19216)
-                if len(data == 11+19216): # Pérdida de paquetes
+                if len(data) == 11+19216: # Pérdida de paquetes
                     f = open(file, 'a')
                     write_line(f, data)
                     f.close()
@@ -143,7 +143,7 @@ def connection(port, file, host):
             print("Exception: ", e)
             print("Rebooting server...")
 
-def server(port=5001, file='tcp_log.csv', host='192.168.1.8'):
+def server(port=5001, file='udp_log.csv', host='192.168.4.1'):
     global STOP
     set_file(file)
     print("HOST: ", host)

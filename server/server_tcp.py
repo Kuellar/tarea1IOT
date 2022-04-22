@@ -144,7 +144,7 @@ def write_line(file, data):
 
     file.write('\n')
 
-def server(port=5001, file='tcp_log.csv', host='192.168.1.8'):
+def server(port=5001, file='tcp_log.csv', host='192.168.4.1'):
     print("HOST: ", host)
     print("PORT: ", port)
     set_file(file)

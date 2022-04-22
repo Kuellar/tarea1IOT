@@ -26,7 +26,7 @@
 
 /** SERVER UDP **/
 
-#define UDP_HOST 0x0801a8c0
+#define UDP_HOST 0x0104A8C0
 #define UDP_PORT 5001
 
 /** DEFINES **/
