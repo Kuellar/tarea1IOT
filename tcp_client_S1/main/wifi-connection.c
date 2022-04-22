@@ -355,7 +355,7 @@ esp_err_t connect_tcp_server(void)
 
         shutdown(sock, 0);
         close(sock);
-        esp_deep_sleep(1e6 * 5);
+        esp_deep_sleep(1e6 * 60);
     }
     return TCP_SUCCESS;
 }
