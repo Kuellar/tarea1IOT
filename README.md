@@ -28,7 +28,7 @@ Para ejecutar los servidores tcp y udp incluidos en server/ se deben llamar los 
 | -------- | ----------- |
 | PORT     | 5001        |
 | FILENAME | tcp_log.csv |
-| HOST     | 192.168.1.8 |
+| HOST     | 192.168.4.1 |
 
 ## UDP
 
@@ -41,6 +41,14 @@ Para ejecutar los servidores tcp y udp incluidos en server/ se deben llamar los 
 > `$ python3 server/server_udp.py [port] [filename]`
 
 > `$ python3 server/server_udp.py [port] [filename] [host]`
+
+#### Default values:
+
+|          | value       |
+| -------- | ----------- |
+| PORT     | 5001        |
+| FILENAME | udp_log.csv |
+| HOST     | 192.168.4.1 |
 
 Para ejecutar los clientes tcp y udp incluidos en tdp_client_S1/ y udp_client_S2/ se debe seleccionar el SSID
 y la contraseña de la red wifi a la cual se desea conectar, para esto, cambiar las variables globales de TCP_client_S1/main/wifi-connection.c y UDP_client_S2/main/wifi-connection.c UDP_HOST (poniendo el host en hexadecimal) y UDP_PORT (Puerto al cual conectarse)
