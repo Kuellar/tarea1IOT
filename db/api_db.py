@@ -1,14 +1,17 @@
+import os
 from sqlalchemy import create_engine, MetaData, desc
 from sqlalchemy.orm import sessionmaker
 from db.model import Config
+from dotenv import load_dotenv
+load_dotenv()
 
 def start_connection():
     engine = None
     try:
-        db_host = 'localhost'
-        db_user = 'root'
-        db_password = '123456'
-        db_database = 'tarea_iot'
+        db_host = os.getenv('DB_HOST')
+        db_user = os.getenv('DB_USER')
+        db_password = os.getenv('DB_PASSWORD')
+        db_database = os.getenv('DB_DATABASE')
         DATABSE_URI=f'mysql+mysqlconnector://{db_user}:{db_password}@{db_host}/{db_database}'
         engine = create_engine(DATABSE_URI)
         connection = engine.connect()
@@ -46,6 +49,6 @@ def add_config(config: Config):
         except:
             session.close()
             return False
-            
 
-print(get_all_configs())
+# CHECK DB
+# print(get_all_configs())

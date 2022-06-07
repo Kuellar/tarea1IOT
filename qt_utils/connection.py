@@ -5,10 +5,10 @@ def searchConnectionBT(self):
     # try:
     #     adapter.start()
     #     devices = adapter.scan()
-        
+    #
     # finally:
     #     adapter.stop()
-    
+
     devices = [{
         'address': '01:23:45:67:89:ab',
         'name': 'ESP_32_1',
@@ -26,7 +26,7 @@ def searchConnectionBT(self):
     for device in devices:
         self.selectBTComboBox.addItem(f"{device['name']} - {device['address']}")
     self.consoleLog(f"{len(devices)} BLE devices found")
-    
+
 
 def connectBT(self):
     device = self.selectBTComboBox.currentText()
@@ -45,4 +45,3 @@ def connectBT(self):
         self.consoleLog(f" Connection closed")
 
     value = "a1e8f5b1-696b-4e4c-87c6-69dfe0b0093"
-    

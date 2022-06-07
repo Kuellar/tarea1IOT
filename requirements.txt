@@ -16,3 +16,5 @@ python-dotenv==0.20.0
 qt5-applications==5.15.2.2.2
 qt5-tools==5.15.2.1.2
 SQLAlchemy==1.4.37
+pexpect==4.8.0
+python-dotenv==0.20.0
