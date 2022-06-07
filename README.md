@@ -4,6 +4,28 @@ Profesor: Luciano Radrigan F
 
 Estudiantes: Ignacio Cuellar - Lucas Oyarzun
 
+## How to run
+
+### 1.- Create virtual environment
+
+> `$ python3 -m venv ./env`
+
+### 2. Activate Python enviroment
+
+> `$ source [env]/bin/activate`
+
+### 3. Install Requirements packages
+
+> `(env)$ pip install -r requirements.txt`
+
+### 4. Create `.env` file. (example in `.env.example`)
+
+### 5. Setup database. [INSTRUCTIONS](https://github.com/Kuellar/tarea2IOT/tree/main/db)
+
+### 6. Run proyect
+
+> `(env)$ python3 app_interface.py`
+
 ## Authors
 
 - Ignacio Cuellar [@Kuellar](https://github.com/Kuellar)
