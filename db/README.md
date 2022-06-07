@@ -31,11 +31,3 @@
 >
 > `$ mysql -u root -p < tables.sql`
 
-### 4. Activate Python enviroment
-
-> `$ source [env]/bin/activate`
-
-### 5. Install Requirements packages
-
-> `(env)$ pip install -r requirements.txt`
-
