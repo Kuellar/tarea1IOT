@@ -1,28 +1,37 @@
+import os
 import pygatt
-def searchConnectionBT(self):
-    # Conexion con pygatt
-    # adapter = pygatt.BGAPIBackend()
-    # try:
-    #     adapter.start()
-    #     devices = adapter.scan()
-    #
-    # finally:
-    #     adapter.stop()
+from dotenv import load_dotenv
+load_dotenv()
 
-    devices = [{
+def searchConnectionBT(self):
+    BLE_SCAN = os.getenv('BLE_SCAN')
+    BLE_SCAN_TIMEOUT = os.getenv('BLE_SCAN_TIMEOUT')
+
+    self.consoleLog("Searching devices...")
+    devices = []
+
+    # Conexion con pygatt
+    if BLE_SCAN:
+        adapter = pygatt.backends.GATTToolBackend()
+        try:
+            adapter.start()
+            devices = adapter.scan(
+                timeout=int(BLE_SCAN_TIMEOUT),
+                run_as_root=True,
+            )
+        finally:
+            adapter.stop()
+
+    devices.append({
         'address': '01:23:45:67:89:ab',
         'name': 'ESP_32_1',
-        'rssi': 'RSSI',
-        'packet_data': 'PACKET_DATA'
-    }, {
+    })
+    devices.append({
         'address': '01:23:45:67:89:ac',
         'name': 'ESP_32_2',
-        'rssi': 'RSSI2',
-        'packet_data': 'PACKET_DATA2'
-    }]
+    })
 
     self.selectBTComboBox.clear()
-    self.consoleLog("Searching devices...")
     for device in devices:
         self.selectBTComboBox.addItem(f"{device['name']} - {device['address']}")
     self.consoleLog(f"{len(devices)} BLE devices found")
