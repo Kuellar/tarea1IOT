@@ -3,6 +3,7 @@ import pygatt
 from dotenv import load_dotenv
 load_dotenv()
 
+
 def searchConnectionBT(self):
     BLE_SCAN = os.getenv('BLE_SCAN')
     BLE_SCAN_TIMEOUT = os.getenv('BLE_SCAN_TIMEOUT')
@@ -33,7 +34,8 @@ def searchConnectionBT(self):
 
     self.selectBTComboBox.clear()
     for device in devices:
-        self.selectBTComboBox.addItem(f"{device['name']} - {device['address']}")
+        self.selectBTComboBox.addItem(
+            f"{device['name']} - {device['address']}")
     self.consoleLog(f"{len(devices)} BLE devices found")
 
 
@@ -41,7 +43,7 @@ def connectBT(self):
     device = self.selectBTComboBox.currentText()
     device_address = device[-17:]
 
-    adapter = pygatt.BGAPIBackend()
+    adapter = pygatt.backends.GATTToolBackend()
 
     self.consoleLog(f" Connecting to {device} ...")
     try:
