@@ -328,7 +328,14 @@ void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gat
             esp_log_buffer_hex(GATTS_TAG, param->write.value, param->write.len);
 
             // SAVE DATA EX: Write_NVS(param->write.value[0], 1);...
-            Write_NVS(param->write.value[0], 1);
+            if (param->write.value[0] == 2) {
+                // CHANGE STATUS - PROTOCOL
+                Write_NVS(param->write.value[1], 1);
+                Write_NVS(param->write.value[2], 2);
+                printf("CHANGE STATUS - PROTOCOL\n");
+            } else {
+                // CHANGE CONFIG
+            }
 
             write_EVT = true;
             rx_len = param->write.len;

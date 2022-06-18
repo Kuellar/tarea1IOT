@@ -26,7 +26,7 @@ int Write_NVS(int32_t data,int key)
     ESP_ERROR_CHECK( err );
 
     // Open
-    printf("Opening NVS .. ");
+    // printf("Opening NVS .. ");
     nvs_handle_t my_handle;
     err = nvs_open("Storage", NVS_READWRITE, &my_handle);
     if (err != ESP_OK) {
@@ -35,7 +35,7 @@ int Write_NVS(int32_t data,int key)
     } else {
         // printf("Done\n");
         // // Write
-        printf("Updating restart counter in NVS ... ");
+        // printf("Updating restart counter in NVS ... ");
         switch (key)
         {
             case 1:
@@ -79,14 +79,14 @@ int Write_NVS(int32_t data,int key)
                 printf("ERROR key");
                 break;
         }
-        printf((err != ESP_OK) ? "Failed in NVS!\n" : "Done\n");
-        printf("Committing updates in NVS ... ");
+        // printf((err != ESP_OK) ? "Failed in NVS!\n" : "Done\n");
+        // printf("Committing updates in NVS ... ");
         err = nvs_commit(my_handle);
-        printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
+        // printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
         // Close
         nvs_close(my_handle);
     }
-    fflush(stdout); 
+    fflush(stdout);
     return 0;
 }
 
@@ -164,7 +164,7 @@ int Read_NVS(int32_t* data, int key)
                 printf("Error (%d) reading!\n", err);
         }
         // printf("Committing updates in NVS ... ");
-        printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
+        // printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
         // Close
         nvs_close(my_handle);
     }

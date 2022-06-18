@@ -11,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from pyqtgraph import GraphicsLayoutWidget
 from qt_utils.connection import searchConnectionBT, connectBT
-from qt_utils.configs import saveConfiguration
+from qt_utils.configs import saveConfiguration, saveStatusProtocol
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -264,6 +264,7 @@ class Ui_Dialog(object):
         self.searchBTButton.clicked.connect(lambda  x: searchConnectionBT(self))
         self.selectBTButton.clicked.connect(lambda  x: connectBT(self))
         self.saveConfButton.clicked.connect(lambda  x: saveConfiguration(self))
+        self.startMonitoringButton.clicked.connect(lambda  x: saveStatusProtocol(self))
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate

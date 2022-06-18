@@ -41,3 +41,14 @@ def saveConfiguration(self):
     #     self.consoleLog("Configuration saved")
     # else:
     #     self.consoleLog("Error saving configuration")
+
+def saveStatusProtocol(self):
+    # TODO: SAVE CONFIG IN DB
+    try:
+        Status = STATUS_DICT[self.operationModeBox.currentText()]
+        ID_Protocol = int(self.protocolIDBox.currentText())
+        value = "0000ff01-0000-1000-8000-00805F9B34FB"
+        self.device.char_write(value, bytearray([2, Status, ID_Protocol]))
+        self.consoleLog(f"Starting monitorin with Status {Status} and Protocol {ID_Protocol}")
+    except Exception as e:
+        self.consoleLog(f"Error - {e}")
