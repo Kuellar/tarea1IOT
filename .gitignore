@@ -212,3 +212,4 @@ cython_debug/
 # End of https://www.toptal.com/developers/gitignore/api/python,c
 
 .vscode/
+tarea2IOT.code-workspace

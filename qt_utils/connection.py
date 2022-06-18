@@ -1,4 +1,6 @@
 import os
+from time import sleep
+from binascii import hexlify
 import pygatt
 from dotenv import load_dotenv
 load_dotenv()
@@ -23,15 +25,6 @@ def searchConnectionBT(self):
         finally:
             adapter.stop()
 
-    devices.append({
-        'address': '01:23:45:67:89:ab',
-        'name': 'ESP_32_1',
-    })
-    devices.append({
-        'address': '01:23:45:67:89:ac',
-        'name': 'ESP_32_2',
-    })
-
     self.selectBTComboBox.clear()
     for device in devices:
         self.selectBTComboBox.addItem(
@@ -39,7 +32,14 @@ def searchConnectionBT(self):
     self.consoleLog(f"{len(devices)} BLE devices found")
 
 
+## SUBSCRIBE HANDLER
+def handle_data(handle, value):
+    print("Received data: %s" % hexlify(value))
+
+
+## SUBSCRIBE
 def connectBT(self):
+    self.consoleLog(f"DEBUG")
     device = self.selectBTComboBox.currentText()
     device_address = device[-17:]
 
@@ -50,9 +50,10 @@ def connectBT(self):
         adapter.start()
         self.device = adapter.connect(device_address)
         self.consoleLog(f" Connected to {device} ...")
-    finally:
+        value = "0000ff01-0000-1000-8000-00805F9B34FB"
+        self.device.subscribe(value, callback=handle_data, wait_for_response=False)
+        self.consoleLog(f" Value {value} ...")
+    except Exception as e:
         adapter.stop()
         self.device = None
-        self.consoleLog(f" Connection closed")
-
-    value = "a1e8f5b1-696b-4e4c-87c6-69dfe0b0093"
+        self.consoleLog(f" Connection closed - {e}")

@@ -45,6 +45,7 @@
 #include "sdkconfig.h"
 
 #include "BLE_server.h"
+#include "nvs.h"
 
 /*My variables*/
 uint8_t *rx_data, rx_len;
@@ -325,6 +326,9 @@ void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gat
         if (!param->write.is_prep){
             ESP_LOGI(GATTS_TAG, "GATT_WRITE_EVT a, app_id %d, value len %d :", param->reg.app_id, param->write.len);
             esp_log_buffer_hex(GATTS_TAG, param->write.value, param->write.len);
+
+            // SAVE DATA EX: Write_NVS(param->write.value[0], 1);...
+            Write_NVS(param->write.value[0], 1);
 
             write_EVT = true;
             rx_len = param->write.len;
