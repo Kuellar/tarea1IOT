@@ -260,6 +260,7 @@ class Ui_Dialog(object):
         #### IMPLEMENTACION PROPIA
 
         self.device = None
+        self.deviceUUID = "0000ff01-0000-1000-8000-00805F9B34FB"
 
         self.searchBTButton.clicked.connect(lambda  x: searchConnectionBT(self))
         self.selectBTButton.clicked.connect(lambda  x: connectBT(self))
@@ -319,9 +320,17 @@ class Ui_Dialog(object):
         self.selectPlotButton.setItemText(1, _translate("Dialog", "2"))
         self.selectPlotButton.setItemText(2, _translate("Dialog", "3"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Visualizacion"))
-        
+
     def consoleLog(self, line):
         self.consoleTextBox.setPlainText(self.consoleTextBox.toPlainText() + line + "\n")
+
+    def updateBTList(self, devices):
+        _translate = QtCore.QCoreApplication.translate
+        for device in devices:
+                self.selectBTComboBox.addItem(
+                f"{device['name']} - {device['address']}")
+        self.consoleLog(f"{len(devices)} BLE devices found")
+        self.searchBTButton.setText(_translate("Dialog", "Buscar BLE"))
 
 
 if __name__ == "__main__":

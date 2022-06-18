@@ -14,8 +14,7 @@ STATUS_DICT = {
 
 def saveConfiguration(self):
     # SEND CONFIG TO ESP
-    value = "0000ff01-0000-1000-8000-00805F9B34FB"
-    self.device.char_write(value, bytearray([0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10]))
+    self.device.char_write(self.deviceUUID, bytearray([0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10]))
 
     # SAVE DATA IN DB
     # self.consoleLog("Saving configuration...")
@@ -49,6 +48,6 @@ def saveStatusProtocol(self):
         ID_Protocol = int(self.protocolIDBox.currentText())
         value = "0000ff01-0000-1000-8000-00805F9B34FB"
         self.device.char_write(value, bytearray([2, Status, ID_Protocol]))
-        self.consoleLog(f"Starting monitorin with Status {Status} and Protocol {ID_Protocol}")
+        self.consoleLog(f"Starting monitoring with Status {Status} and Protocol {ID_Protocol}")
     except Exception as e:
         self.consoleLog(f"Error - {e}")
