@@ -9,7 +9,9 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from pyqtgraph import GraphicsLayoutWidget
+from PyQt5.QtCore import QTimer
+import pyqtgraph as pg
+import numpy as np
 from qt_utils.connection import searchConnectionBT, connectBT
 from qt_utils.configs import saveConfiguration, saveStatusProtocol
 
@@ -193,15 +195,15 @@ class Ui_Dialog(object):
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
-        self.plot1 = GraphicsLayoutWidget(self.tab_2)
+        self.plot1 = pg.GraphicsLayoutWidget(self.tab_2)
         self.plot1.setGeometry(QtCore.QRect(-10, 30, 501, 141))
         self.plot1.setStyleSheet("background-color: rgb(0, 0, 0);")
         self.plot1.setObjectName("plot1")
-        self.plot2 = GraphicsLayoutWidget(self.tab_2)
+        self.plot2 = pg.GraphicsLayoutWidget(self.tab_2)
         self.plot2.setGeometry(QtCore.QRect(-10, 180, 501, 141))
         self.plot2.setStyleSheet("background-color: rgb(0, 0, 0);")
         self.plot2.setObjectName("plot2")
-        self.plot3 = GraphicsLayoutWidget(self.tab_2)
+        self.plot3 = pg.GraphicsLayoutWidget(self.tab_2)
         self.plot3.setGeometry(QtCore.QRect(0, 330, 491, 141))
         self.plot3.setStyleSheet("background-color: rgb(0, 0, 0);")
         self.plot3.setObjectName("plot3")
@@ -268,6 +270,24 @@ class Ui_Dialog(object):
         self.saveConfButton.clicked.connect(lambda  x: saveConfiguration(self))
         self.startMonitoringButton.clicked.connect(lambda  x: saveStatusProtocol(self))
 
+        
+        ### PLOT
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.updatePlots)
+        self.timer.start(500)
+
+        self.graph_item_1 = pg.PlotItem()
+        self.plot1.addItem(self.graph_item_1)
+
+        self.graph_item_2 = pg.PlotItem()
+        self.plot2.addItem(self.graph_item_2)
+
+        self.graph_item_3 = pg.PlotItem()
+        self.plot3.addItem(self.graph_item_3)
+
+        self.t = np.linspace(0, 2*np.pi, 1000)
+        self.num = 0.01
+
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
@@ -333,6 +353,19 @@ class Ui_Dialog(object):
         self.consoleLog(f"{len(devices)} BLE devices found")
         self.searchBTButton.setText(_translate("Dialog", "Buscar BLE"))
 
+    def updatePlots(self):
+        self.graph_item_1.clear()
+        self.graph_item_2.clear()
+        self.graph_item_3.clear()
+
+        data = np.sin(self.t + self.num)
+        data = np.sin(self.t + self.num)
+        data = np.sin(self.t + self.num)
+        self.graph_item_1.plot(self.t, data)
+        self.graph_item_2.plot(self.t, data)
+        self.graph_item_3.plot(self.t, data)
+        self.num += 0.5
+        
 
 if __name__ == "__main__":
     import sys
