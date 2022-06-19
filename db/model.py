@@ -1,11 +1,11 @@
-from sqlalchemy import (DateTime, Column, Integer, SmallInteger, ForeignKey, JSON)
+from sqlalchemy import (DateTime, Column, Integer, SmallInteger, BigInteger, ForeignKey, JSON)
 from sqlalchemy.orm import declarative_base
 
 
 base = declarative_base()
 class Config(base):
     __tablename__ = 'config'
-
+    mac = Column(BigInteger, primary_key=True)
     Status = Column(SmallInteger)
     ID_Protocol = Column(SmallInteger)
     BMI270_sampling = Column(Integer)
@@ -16,23 +16,23 @@ class Config(base):
     Port_TCP = Column(Integer)
     Port_UDP = Column(Integer)
     Host_Ip_Addr = Column(Integer)
-    Ssid = Column(Integer, primary_key=True)
+    Ssid = Column(Integer)
     Pass = Column(Integer)
 
 
 class Protocol0(base):
     __tablename__ = 'protocol_0'
 
-    id = Column(Integer, primary_key=True)
-    esp_ssid = Column(Integer, ForeignKey("config.Ssid"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mac = Column(BigInteger, ForeignKey("config.mac"), primary_key=True)
     ok = Column(SmallInteger)
 
 
 class Protocol1(base):
     __tablename__ = 'protocol_1'
 
-    id = Column(Integer, primary_key=True)
-    esp_ssid = Column(Integer, ForeignKey("config.Ssid"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mac = Column(BigInteger, ForeignKey("config.mac"), primary_key=True)
     Batt_level = Column(SmallInteger)
     Timestamp = Column(DateTime)
 
@@ -40,8 +40,8 @@ class Protocol1(base):
 class Protocol2(base):
     __tablename__ = 'protocol_2'
 
-    id = Column(Integer, primary_key=True)
-    esp_ssid = Column(Integer, ForeignKey("config.Ssid"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mac = Column(BigInteger, ForeignKey("config.mac"), primary_key=True)
     Batt_level = Column(SmallInteger)
     Timestamp = Column(DateTime)
     Temp = Column(SmallInteger)
@@ -53,8 +53,8 @@ class Protocol2(base):
 class Protocol3(base):
     __tablename__ = 'protocol_3'
 
-    id = Column(Integer, primary_key=True)
-    esp_ssid = Column(Integer, ForeignKey("config.Ssid"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mac = Column(BigInteger, ForeignKey("config.mac"), primary_key=True)
     Batt_level = Column(SmallInteger)
     Timestamp = Column(DateTime)
     Temp = Column(SmallInteger)
@@ -67,8 +67,8 @@ class Protocol3(base):
 class Protocol4(base):
     __tablename__ = 'protocol_4'
 
-    id = Column(Integer, primary_key=True)
-    esp_ssid = Column(Integer, ForeignKey("config.Ssid"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mac = Column(BigInteger, ForeignKey("config.mac"), primary_key=True)
     Batt_level = Column(SmallInteger)
     Timestamp = Column(DateTime)
     Temp = Column(SmallInteger)
@@ -87,8 +87,8 @@ class Protocol4(base):
 class Protocol5(base):
     __tablename__ = 'protocol_5'
 
-    id = Column(Integer, primary_key=True)
-    esp_ssid = Column(Integer, ForeignKey("config.Ssid"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mac = Column(BigInteger, ForeignKey("config.mac"), primary_key=True)
     Batt_level = Column(SmallInteger)
     Timestamp = Column(DateTime)
     Temp = Column(SmallInteger)

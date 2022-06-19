@@ -261,6 +261,7 @@ class Ui_Dialog(object):
 
         self.device = None
         self.deviceUUID = "0000ff01-0000-1000-8000-00805F9B34FB"
+        self.mac = None
 
         self.searchBTButton.clicked.connect(lambda  x: searchConnectionBT(self))
         self.selectBTButton.clicked.connect(lambda  x: connectBT(self))

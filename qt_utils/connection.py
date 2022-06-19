@@ -1,7 +1,8 @@
 import os
 from PyQt5.QtCore import QCoreApplication, QObject, QThread, pyqtSignal
 from time import sleep
-from binascii import hexlify
+import re
+from db.api_db import save_data_1, get_config
 import pygatt
 from dotenv import load_dotenv
 load_dotenv()
@@ -52,7 +53,26 @@ def searchConnectionBT(self):
 
 ## SUBSCRIBE HANDLER
 def handle_data(handle, value):
-    print("Received data: %s" % hexlify(value))
+    # print(data)
+    if len(value) < 9:
+        return
+    protocol = int.from_bytes(value[0:1], byteorder="big")
+    if protocol not in [0, 1, 2, 3, 4, 5]:
+        return
+    status = int.from_bytes(value[1:2], byteorder="big")
+    if status not in [0, 20, 21, 22, 23, 30, 31]:
+        return
+    mac = int.from_bytes(value[2:8], byteorder="big")
+    leng_msg = int.from_bytes(value[8:9], byteorder="big")
+    header = {
+        "protocol": protocol,
+        "status": status,
+        "mac": mac,
+        "leng_msg": leng_msg
+     }
+    print(header)
+    if header["protocol"] == 1:
+        save_data_1(header, value[9:])
 
 
 ## SUBSCRIBE
@@ -63,6 +83,23 @@ def connectBT(self):
         return
 
     device_address = device[-17:]
+    self.mac = int(device_address.replace(":",""), 16) - 2
+
+    old_config = get_config(self.mac)
+    if old_config.count() > 0:
+        self.AccSamplingBox.setText(str(old_config[0].BMI270_sampling)),
+        self.AccSensibilityBox.setText(str(old_config[0].BMI270_Acc_Sensibility)),
+        self.GyroSensibilityBox.setText(str(old_config[0].BMI270_Gyro_Sensibility)),
+        self.BME688SamplingBox.setText(str(old_config[0].BME688_Sampling)),
+        self.discontinuosTimeBox.setText(str(old_config[0].Discontinuous_Time)),
+        self.portTCPBox.setText(str(old_config[0].Port_TCP)),
+        self.portUDPBox.setText(str(old_config[0].Port_UDP)),
+        self.hostIPAddrBox.setText(str(old_config[0].Host_Ip_Addr)),
+        self.ssidBox.setText(str(old_config[0].Ssid)),
+        self.passBox.setText(str(old_config[0].Pass)),
+
+    # mac_string = ":".join(re.findall("..", "%012x"%mac_int))
+    # print(mac_string)
 
     adapter = pygatt.backends.GATTToolBackend()
 

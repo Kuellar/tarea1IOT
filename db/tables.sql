@@ -12,11 +12,12 @@ bigint    8 byte - int64_t
 timestamp 4 byte
 */
 
-CREATE DATABASE `tarea_iot`;
-USE tarea_iot;
+CREATE DATABASE `tarea_iot_v2`;
+USE tarea_iot_v2;
 
 /* Configuración por Bluetooth (status=0) */
 CREATE TABLE `config` (
+    `mac` bigint NOT NULL,
     `Status` tinyint NOT NULL,
     `ID_Protocol` tinyint NOT NULL,
     `BMI270_sampling` int NOT NULL,
@@ -27,39 +28,39 @@ CREATE TABLE `config` (
     `Port_TCP` int NOT NULL,
     `Port_UDP` int NOT NULL,
     `Host_Ip_Addr` int NOT NULL,
-    `Ssid` int NOT NULL, /* KEY? */
+    `Ssid` int NOT NULL,
     `Pass` int NOT NULL,
 
     /* KEY */
-    PRIMARY KEY(Ssid)
+    PRIMARY KEY(mac)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `protocol_0` (
     `id` int NOT NULL AUTO_INCREMENT,
-    `esp_ssid` int, /* CHECK */
+    `mac` bigint NOT NULL,
     /* DATA */
     `ok` tinyint NOT NULL,
 
     /* KEY */
     PRIMARY KEY(id),
-    FOREIGN KEY(esp_ssid) REFERENCES config(Ssid)
+    FOREIGN KEY(mac) REFERENCES config(mac)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `protocol_1` (
     `id` int NOT NULL AUTO_INCREMENT,
-    `esp_ssid` int NOT NULL, /*CHECK*/
+    `mac` bigint NOT NULL,
     /* DATA */
     `Batt_level` tinyint NOT NULL,
     `Timestamp` timestamp DEFAULT CURRENT_TIMESTAMP,
 
     /* KEY */
     PRIMARY KEY(id),
-    FOREIGN KEY(esp_ssid) REFERENCES config(Ssid)
+    FOREIGN KEY(mac) REFERENCES config(mac)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `protocol_2` (
     `id` int NOT NULL AUTO_INCREMENT,
-    `esp_ssid` int NOT NULL, /*CHECK*/
+    `mac` bigint NOT NULL,
     /* DATA */
     `Batt_level` tinyint NOT NULL,
     `Timestamp` timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -70,12 +71,12 @@ CREATE TABLE `protocol_2` (
 
     /* KEY */
     PRIMARY KEY(id),
-    FOREIGN KEY(esp_ssid) REFERENCES config(Ssid)
+    FOREIGN KEY(mac) REFERENCES config(mac)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `protocol_3` (
     `id` int NOT NULL AUTO_INCREMENT,
-    `esp_ssid` int NOT NULL, /*CHECK*/
+    `mac` bigint NOT NULL,
     /* DATA */
     `Batt_level` tinyint NOT NULL,
     `Timestamp` timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -87,12 +88,12 @@ CREATE TABLE `protocol_3` (
 
     /* KEY */
     PRIMARY KEY(id),
-    FOREIGN KEY(esp_ssid) REFERENCES config(Ssid)
+    FOREIGN KEY(mac) REFERENCES config(mac)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `protocol_4` (
     `id` int NOT NULL AUTO_INCREMENT,
-    `esp_ssid` int NOT NULL, /*CHECK*/
+    `mac` bigint NOT NULL,
     /* DATA */
     `Batt_level` tinyint NOT NULL,
     `Timestamp` timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -110,13 +111,13 @@ CREATE TABLE `protocol_4` (
 
     /* KEY */
     PRIMARY KEY(id),
-    FOREIGN KEY(esp_ssid) REFERENCES config(Ssid)
+    FOREIGN KEY(mac) REFERENCES config(mac)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* https://sebhastian.com/mysql-array/ */
 CREATE TABLE `protocol_5` (
     `id` int NOT NULL AUTO_INCREMENT,
-    `esp_ssid` int NOT NULL, /*CHECK*/
+    `mac` bigint NOT NULL,
     /* DATA */
     `Batt_level` tinyint NOT NULL,
     `Timestamp` timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -128,8 +129,7 @@ CREATE TABLE `protocol_5` (
     `Acc_y` JSON NOT NULL,
     `Acc_z` JSON NOT NULL,
 
-
     /* KEY */
     PRIMARY KEY(id),
-    FOREIGN KEY(esp_ssid) REFERENCES config(Ssid)
+    FOREIGN KEY(mac) REFERENCES config(mac)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
