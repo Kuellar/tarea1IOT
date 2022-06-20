@@ -41,6 +41,7 @@ Sensor_Data_1 get_protocol_1(int8_t status) {
     return res;
 }
 
+
 Sensor_Data_2 get_protocol_2(int8_t status) {
     // READ BASE MAC
     uint8_t base_mac[6];
@@ -56,15 +57,22 @@ Sensor_Data_2 get_protocol_2(int8_t status) {
     res.Batt_level = abs((int8_t) esp_random()) % 100;
     res.Timestamp[0] = res.Timestamp[1] = res.Timestamp[2] = res.Timestamp[3] = 0;
 
-    res.Temp = (int8_t) esp_random() % 25 + 5;
-    int32_t press = (int32_t) (esp_random() / UINT32_MAX) * 200 + 1000;
-    memcpy(res.Press, &press, sizeof(res.Press));
-    res.Hum = (int8_t) esp_random() % 50 + 30;
-    int32_t co = (int32_t) (esp_random() / UINT32_MAX) * 170 + 30;
-    memcpy(res.Co, &co, sizeof(res.Co));
+    res.Temp = abs((int8_t) esp_random()) % 25 + 5;
+    int32_t press = abs((int32_t) esp_random()) % 200 + 1000;
+    res.Press[3] = (uint8_t)press;
+    res.Press[2] = (uint8_t)(press>>=8);
+    res.Press[1] = (uint8_t)(press>>=8);
+    res.Press[0] = (uint8_t)(press>>=8);
+    res.Hum = abs((int8_t) esp_random()) % 50 + 30;
+    int32_t co = abs((int32_t) esp_random()) % 170 + 30;
+    res.Co[3] = (uint8_t)co;
+    res.Co[2] = (uint8_t)(co>>=8);
+    res.Co[1] = (uint8_t)(co>>=8);
+    res.Co[0] = (uint8_t)(co>>=8);
 
     return res;
 }
+
 
 Sensor_Data_3 get_protocol_3(int8_t status) {
     // READ BASE MAC
@@ -87,17 +95,24 @@ Sensor_Data_3 get_protocol_3(int8_t status) {
     res.Batt_level = abs((int8_t) esp_random()) % 100;
     res.Timestamp[0] = res.Timestamp[1] = res.Timestamp[2] = res.Timestamp[3] = 0;
 
-    res.Temp = (int8_t) esp_random() % 25 + 5;
-    int32_t press = (int32_t) (esp_random() / UINT32_MAX) * 200 + 1000;
-    memcpy(res.Press, &press, sizeof(res.Press));
-    res.Hum = (int8_t) esp_random() % 50 + 30;
-    int32_t co = (int32_t) (esp_random() / UINT32_MAX) * 170 + 30;
-    memcpy(res.Co, &co, sizeof(res.Co));
+    res.Temp = abs((int8_t) esp_random()) % 25 + 5;
+    int32_t press = abs((int32_t) esp_random()) % 200 + 1000;
+    res.Press[3] = (uint8_t)press;
+    res.Press[2] = (uint8_t)(press>>=8);
+    res.Press[1] = (uint8_t)(press>>=8);
+    res.Press[0] = (uint8_t)(press>>=8);
+    res.Hum = abs((int8_t) esp_random()) % 50 + 30;
+    int32_t co = abs((int32_t) esp_random()) % 170 + 30;
+    res.Co[3] = (uint8_t)co;
+    res.Co[2] = (uint8_t)(co>>=8);
+    res.Co[1] = (uint8_t)(co>>=8);
+    res.Co[0] = (uint8_t)(co>>=8);
 
     memcpy(res.RMS, &RMS, sizeof(res.RMS));
 
     return res;
 }
+
 
 Sensor_Data_4 get_protocol_4(int8_t status) {
     // READ BASE MAC
@@ -123,12 +138,18 @@ Sensor_Data_4 get_protocol_4(int8_t status) {
     res.Batt_level = abs((int8_t) esp_random()) % 100;
     res.Timestamp[0] = res.Timestamp[1] = res.Timestamp[2] = res.Timestamp[3] = 0;
 
-    res.Temp = (int8_t) esp_random() % 25 + 5;
-    int32_t press = (int32_t) (esp_random() / UINT32_MAX) * 200 + 1000;
-    memcpy(res.Press, &press, sizeof(res.Press));
-    res.Hum = (int8_t) esp_random() % 50 + 30;
-    int32_t co = (int32_t) (esp_random() / UINT32_MAX) * 170 + 30;
-    memcpy(res.Co, &co, sizeof(res.Co));
+    res.Temp = abs((int8_t) esp_random()) % 25 + 5;
+    int32_t press = abs((int32_t) esp_random()) % 200 + 1000;
+    res.Press[3] = (uint8_t)press;
+    res.Press[2] = (uint8_t)(press>>=8);
+    res.Press[1] = (uint8_t)(press>>=8);
+    res.Press[0] = (uint8_t)(press>>=8);
+    res.Hum = abs((int8_t) esp_random()) % 50 + 30;
+    int32_t co = abs((int32_t) esp_random()) % 170 + 30;
+    res.Co[3] = (uint8_t)co;
+    res.Co[2] = (uint8_t)(co>>=8);
+    res.Co[1] = (uint8_t)(co>>=8);
+    res.Co[0] = (uint8_t)(co>>=8);
 
     memcpy(res.RMS, &RMS, sizeof(res.RMS));
     memcpy(res.Amp_x_bmi, &Amp_x, sizeof(res.Amp_x_bmi));
@@ -140,6 +161,7 @@ Sensor_Data_4 get_protocol_4(int8_t status) {
 
     return res;
 }
+
 
 Sensor_Data_5 get_protocol_5(int8_t status) {
     // READ BASE MAC
@@ -156,12 +178,18 @@ Sensor_Data_5 get_protocol_5(int8_t status) {
     res.Batt_level = abs((int8_t) esp_random()) % 100;
     res.Timestamp[0] = res.Timestamp[1] = res.Timestamp[2] = res.Timestamp[3] = 0;
 
-    res.Temp = (int8_t) esp_random() % 25 + 5;
-    int32_t press = (int32_t) (esp_random() / UINT32_MAX) * 200 + 1000;
-    memcpy(res.Press, &press, sizeof(res.Press));
-    res.Hum = (int8_t) esp_random() % 50 + 30;
-    int32_t co = (int32_t) (esp_random() / UINT32_MAX) * 170 + 30;
-    memcpy(res.Co, &co, sizeof(res.Co));
+    res.Temp = abs((int8_t) esp_random()) % 25 + 5;
+    int32_t press = abs((int32_t) esp_random()) % 200 + 1000;
+    res.Press[3] = (uint8_t)press;
+    res.Press[2] = (uint8_t)(press>>=8);
+    res.Press[1] = (uint8_t)(press>>=8);
+    res.Press[0] = (uint8_t)(press>>=8);
+    res.Hum = abs((int8_t) esp_random()) % 50 + 30;
+    int32_t co = abs((int32_t) esp_random()) % 170 + 30;
+    res.Co[3] = (uint8_t)co;
+    res.Co[2] = (uint8_t)(co>>=8);
+    res.Co[1] = (uint8_t)(co>>=8);
+    res.Co[0] = (uint8_t)(co>>=8);
 
     for (int i = 0; i < 2000; i++)
     {

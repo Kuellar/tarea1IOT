@@ -101,14 +101,19 @@ def add_data(data: Protocol1):
             return False
 
 def save_data_1(header, data):
-    batt_level = int.from_bytes(data[0:1], byteorder="big")
+    ERR = []
+    batt_level = int.from_bytes(data[0:1], byteorder=BYTE_ORDER)
     if batt_level < 0 or batt_level > 100:
-        return
-    timestamp = int.from_bytes(data[1:5], byteorder="big")
+        ERR.append("batt_level")
+    timestamp = int.from_bytes(data[1:5], byteorder=BYTE_ORDER)
     if timestamp != 0:
-        return
+        ERR.append("timestamp")
     timestamp = datetime.now()
+
     print(batt_level, timestamp)
+    if len(ERR) != 0:
+        print("ERROR: ", ERR)
+        return
 
     db_data = Protocol1(
         mac = header["mac"],
@@ -116,6 +121,51 @@ def save_data_1(header, data):
         Timestamp = timestamp,
     )
     add_data(db_data)
+
+def save_data_2(header, data):
+    ERR = []
+    batt_level = int.from_bytes(data[0:1], byteorder=BYTE_ORDER)
+    if batt_level < 0 or batt_level > 100:
+        ERR.append("batt_level")
+    timestamp = int.from_bytes(data[1:5], byteorder=BYTE_ORDER)
+    if timestamp != 0:
+        ERR.append("timestamp")
+    timestamp = datetime.now()
+
+    temp = int.from_bytes(data[5:6], byteorder=BYTE_ORDER)
+    if temp < 5 or temp > 30:
+        ERR.append("temp")
+    press = int.from_bytes(data[6:10], byteorder=BYTE_ORDER)
+    if press < 1000 or press > 1200:
+        ERR.append("press")
+    hum = int.from_bytes(data[10:11], byteorder=BYTE_ORDER)
+    if hum < 30 or hum > 80:
+        ERR.append("hum")
+    co = int.from_bytes(data[11:15], byteorder=BYTE_ORDER)
+    if co < 30 or co > 200:
+        ERR.append("co")
+
+    print(batt_level, timestamp, temp, press, hum, co)
+    if len(ERR) != 0:
+        print("ERROR: ", ERR)
+        return
+
+    db_data = Protocol2(
+        mac = header["mac"],
+        Batt_level = batt_level,
+        Timestamp = timestamp,
+        Temp = temp,
+        Press = press,
+        Hum = hum,
+        Co = co,
+    )
+    add_data(db_data)
+
+def save_data_3(header, data):
+    return
+
+def save_data_4(header, data):
+    return
 
 # CHECK DB
 # print(get_all_configs())

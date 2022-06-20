@@ -16,25 +16,6 @@ typedef struct Config
     int32_t Pass;
 }Config;
 
-#define BYTE sizeof(int8_t)
-#define ID_DEVICE_SPACE 2
-#define MAC_SPACE 6
-#define ID_PROTOCOL_SPACE 1
-#define LENG_MSG_SPACE 2
-#define DATA_1_SPACE 1
-#define DATA_2_SPACE 1
-#define DATA_3_SPACE 4
-#define DATA_4_SPACE 1
-#define DATA_5_SPACE 4
-#define DATA_6_SPACE 1
-#define DATA_7_SPACE 4
-#define DATA_8_SPACE 4
-#define DATA_9_SPACE 4
-#define DATA_10_SPACE 4
-#define DATA_11_SPACE 4
-#define DATA_12_SPACE 4
-#define DATA_13_SPACE 4
-
 typedef struct Sensor_Data_0
 {
     // HEADER

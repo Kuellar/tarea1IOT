@@ -2,7 +2,7 @@ import os
 from PyQt5.QtCore import QCoreApplication, QObject, QThread, pyqtSignal
 from time import sleep
 import re
-from db.api_db import save_data_1, get_config
+from db.api_db import save_data_1, save_data_2, save_data_3, save_data_4, get_config
 import pygatt
 from dotenv import load_dotenv
 load_dotenv()
@@ -73,6 +73,12 @@ def handle_data(handle, value):
     print(header)
     if header["protocol"] == 1:
         save_data_1(header, value[9:])
+    if header["protocol"] == 2:
+        save_data_2(header, value[9:])
+    if header["protocol"] == 3:
+        save_data_3(header, value[9:])
+    if header["protocol"] == 4:
+        save_data_4(header, value[9:])
 
 
 ## SUBSCRIBE

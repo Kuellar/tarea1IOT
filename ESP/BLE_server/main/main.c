@@ -35,8 +35,13 @@ void app_main(void)
     Read_NVS(&status, 1);
 
     // VARS
+    // Sensor_Data_0 data0;
     Sensor_Data_1 data1;
-    tx_data = (uint8_t*) malloc(sizeof(Sensor_Data_1));
+    Sensor_Data_2 data2;
+    Sensor_Data_3 data3;
+    Sensor_Data_4 data4;
+    // Sensor_Data_5 data5;
+    tx_data = (uint8_t*) malloc(sizeof(Sensor_Data_4));
 
     switch (status)
     {
@@ -76,7 +81,24 @@ void app_main(void)
                     tx_len = 14;
                     data1 = get_protocol_1((int8_t) status);
                     memcpy(tx_data, &data1, sizeof(Sensor_Data_1));
-
+                    ESP_ERROR_CHECK(BLE_send(tx_len, tx_data, false));
+                    break;
+                case 2:
+                    tx_len = 24;
+                    data2 = get_protocol_2((int8_t) status);
+                    memcpy(tx_data, &data2, sizeof(Sensor_Data_2));
+                    ESP_ERROR_CHECK(BLE_send(tx_len, tx_data, false));
+                    break;
+                case 3:
+                    tx_len = 28;
+                    data3 = get_protocol_3((int8_t) status);
+                    memcpy(tx_data, &data3, sizeof(Sensor_Data_3));
+                    ESP_ERROR_CHECK(BLE_send(tx_len, tx_data, false));
+                    break;
+                case 4:
+                    tx_len = 52;
+                    data4 = get_protocol_4((int8_t) status);
+                    memcpy(tx_data, &data4, sizeof(Sensor_Data_4));
                     ESP_ERROR_CHECK(BLE_send(tx_len, tx_data, false));
                     break;
                 default:
