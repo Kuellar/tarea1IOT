@@ -51,6 +51,27 @@ def get_config(mac):
             session.close()
             return config
 
+def get_last_data_prot(self):
+    engine = start_connection()
+    data = 0
+    if not engine:
+        return
+    SessionFactory = sessionmaker(engine)
+    with SessionFactory() as session:
+        try:
+            ID_Protocol = session.query(Config).filter(Config.mac == self.mac).first().ID_Protocol
+            data = (session
+                .query(self.protocols[ID_Protocol])
+                .filter(self.protocols[ID_Protocol].mac == self.mac)
+                .order_by(self.protocols[ID_Protocol].Timestamp.desc())
+                .first()
+            )
+        except:
+            return {"error": ":("}
+        finally:
+            session.close()
+            return data
+
 def add_config(config: Config):
     engine = start_connection()
     if not engine:
@@ -83,17 +104,14 @@ def update_config(mac2, conf):
             return True
 
 def add_data(data: Protocol1):
-    print("Added data TEST")
     engine = start_connection()
     if not engine:
         return
     SessionFactory = sessionmaker(engine)
     with SessionFactory() as session:
         try:
-            print("Added data TEST2")
             session.add(data)
             session.commit()
-            print("Added data")
             session.close()
             return True
         except:

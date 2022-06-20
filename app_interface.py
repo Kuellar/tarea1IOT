@@ -12,8 +12,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QTimer
 import pyqtgraph as pg
 import numpy as np
+from db.api_db import get_last_data_prot
+from db.model import Config, Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Protocol5
 from qt_utils.connection import searchConnectionBT, connectBT
-from qt_utils.configs import saveConfiguration, saveStatusProtocol
+from qt_utils.configs import saveConfiguration
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -28,6 +30,11 @@ class Ui_Dialog(object):
         self.label_searchBT.setGeometry(QtCore.QRect(20, 30, 191, 21))
         self.label_searchBT.setStyleSheet("color: rgb(0, 0, 0);")
         self.label_searchBT.setObjectName("label_searchBT")
+        self.label_statusESP = QtWidgets.QLabel(self.tab)
+        self.label_statusESP.setGeometry(QtCore.QRect(500, 30, 191, 21))
+        self.label_statusESP.setStyleSheet("color: rgb(0, 0, 0);")
+        self.label_statusESP.setObjectName("label_statusESP")
+        self.label_statusESP.setFont(QtGui.QFont("Arial", 13))
         self.searchBTButton = QtWidgets.QPushButton(self.tab)
         self.searchBTButton.setGeometry(QtCore.QRect(200, 20, 101, 41))
         self.searchBTButton.setMinimumSize(QtCore.QSize(101, 41))
@@ -51,7 +58,7 @@ class Ui_Dialog(object):
         self.consoleTextBox.setObjectName("consoleTextBox")
         self.batteryProgressBar = QtWidgets.QProgressBar(self.tab)
         self.batteryProgressBar.setGeometry(QtCore.QRect(660, 550, 111, 16))
-        self.batteryProgressBar.setProperty("value", 24)
+        self.batteryProgressBar.setProperty("value", 0)
         self.batteryProgressBar.setObjectName("batteryProgressBar")
         self.selectBTButton = QtWidgets.QPushButton(self.tab)
         self.selectBTButton.setGeometry(QtCore.QRect(310, 20, 101, 41))
@@ -144,24 +151,20 @@ class Ui_Dialog(object):
         self.passBox.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.passBox.setObjectName("passBox")
         self.saveConfButton = QtWidgets.QPushButton(self.tab)
-        self.saveConfButton.setGeometry(QtCore.QRect(540, 250, 161, 41))
+        self.saveConfButton.setGeometry(QtCore.QRect(540, 300, 161, 41))
         self.saveConfButton.setMinimumSize(QtCore.QSize(101, 41))
         self.saveConfButton.setStyleSheet("color: rgb(213, 213, 213);\n"
 "background-color: rgb(0, 115, 0);\n"
 "")
         self.saveConfButton.setObjectName("saveConfButton")
         self.label_28 = QtWidgets.QLabel(self.tab)
-        self.label_28.setGeometry(QtCore.QRect(440, 310, 121, 16))
+        self.label_28.setGeometry(QtCore.QRect(310, 310, 121, 16))
         self.label_28.setStyleSheet("color: rgb(0, 0, 0);")
         self.label_28.setObjectName("label_28")
         self.protocolIDBox = QtWidgets.QComboBox(self.tab)
-        self.protocolIDBox.setGeometry(QtCore.QRect(370, 340, 261, 31))
+        self.protocolIDBox.setGeometry(QtCore.QRect(310, 340, 71, 31))
         self.protocolIDBox.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.protocolIDBox.setObjectName("protocolIDBox")
-        self.protocolIDBox.addItem("")
-        self.protocolIDBox.addItem("")
-        self.protocolIDBox.addItem("")
-        self.protocolIDBox.addItem("")
         self.protocolIDBox.addItem("")
         self.startMonitoringButton = QtWidgets.QPushButton(self.tab)
         self.startMonitoringButton.setGeometry(QtCore.QRect(180, 400, 161, 41))
@@ -178,7 +181,7 @@ class Ui_Dialog(object):
 "")
         self.stopMonitoringButton.setObjectName("stopMonitoringButton")
         self.operationModeBox = QtWidgets.QComboBox(self.tab)
-        self.operationModeBox.setGeometry(QtCore.QRect(80, 340, 261, 31))
+        self.operationModeBox.setGeometry(QtCore.QRect(35, 340, 200, 31))
         self.operationModeBox.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.operationModeBox.setObjectName("operationModeBox_1")
         self.operationModeBox.addItem("")
@@ -189,7 +192,7 @@ class Ui_Dialog(object):
         self.operationModeBox.addItem("")
         self.operationModeBox.addItem("")
         self.label_26 = QtWidgets.QLabel(self.tab)
-        self.label_26.setGeometry(QtCore.QRect(150, 310, 121, 16))
+        self.label_26.setGeometry(QtCore.QRect(70, 310, 121, 16))
         self.label_26.setStyleSheet("color: rgb(0, 0, 0);")
         self.label_26.setObjectName("label_26")
         self.tabWidget.addTab(self.tab, "")
@@ -261,16 +264,28 @@ class Ui_Dialog(object):
 
         #### IMPLEMENTACION PROPIA
 
+        self.protocols = [Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Protocol5]
+
         self.device = None
         self.deviceUUID = "0000ff01-0000-1000-8000-00805F9B34FB"
         self.mac = None
 
+        self.STATUS_DICT = {
+            "Configuracion por Bluetooth": 0,
+            "Configuracion via TCP en BD": 20,
+            "Conexion TCP continua": 21,
+            "Conexion TCP discontinua": 22,
+            "Conexion UDP": 23,
+            "BLE continua": 30,
+            "BLE discontinua": 31
+        }
+
         self.searchBTButton.clicked.connect(lambda  x: searchConnectionBT(self))
         self.selectBTButton.clicked.connect(lambda  x: connectBT(self))
         self.saveConfButton.clicked.connect(lambda  x: saveConfiguration(self))
-        self.startMonitoringButton.clicked.connect(lambda  x: saveStatusProtocol(self))
+        self.operationModeBox.currentIndexChanged.connect(lambda x: self.operationModeSelected())
 
-        
+
         ### PLOT
         self.timer = QTimer()
         self.timer.timeout.connect(self.updatePlots)
@@ -292,9 +307,10 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.label_searchBT.setText(_translate("Dialog", "Buscar dispositivos Bluetooth"))
+        self.label_statusESP.setText(_translate("Dialog", "Desconectado"))
         self.searchBTButton.setText(_translate("Dialog", "Buscar BLE"))
         self.label_21.setText(_translate("Dialog", "Consola"))
-        self.selectBTButton.setText(_translate("Dialog", "Selecionar"))
+        self.selectBTButton.setText(_translate("Dialog", "Conectar"))
         self.label_29.setText(_translate("Dialog", "Parametros "))
         self.label_30.setText(_translate("Dialog", "Acc Sampling"))
         self.label_31.setText(_translate("Dialog", "Acc Sensibility"))
@@ -306,13 +322,9 @@ class Ui_Dialog(object):
         self.label_70.setText(_translate("Dialog", "Host_ip_addr"))
         self.label_86.setText(_translate("Dialog", "Ssid"))
         self.label_87.setText(_translate("Dialog", "Pass"))
-        self.saveConfButton.setText(_translate("Dialog", "Save Conf"))
+        self.saveConfButton.setText(_translate("Dialog", "Guardar Conf"))
         self.label_28.setText(_translate("Dialog", "ID Protocolo"))
-        self.protocolIDBox.setItemText(0, _translate("Dialog", "1"))
-        self.protocolIDBox.setItemText(1, _translate("Dialog", "2"))
-        self.protocolIDBox.setItemText(2, _translate("Dialog", "3"))
-        self.protocolIDBox.setItemText(3, _translate("Dialog", "4"))
-        self.protocolIDBox.setItemText(4, _translate("Dialog", "5"))
+        self.protocolIDBox.setItemText(0, _translate("Dialog", "0"))
         self.startMonitoringButton.setText(_translate("Dialog", "Iniciar Monitoreo"))
         self.stopMonitoringButton.setText(_translate("Dialog", "Detener Monitoreo"))
         self.operationModeBox.setItemText(0, _translate("Dialog", "Configuracion por Bluetooth"))
@@ -353,19 +365,32 @@ class Ui_Dialog(object):
         self.consoleLog(f"{len(devices)} BLE devices found")
         self.searchBTButton.setText(_translate("Dialog", "Buscar BLE"))
 
+    def operationModeSelected(self):
+        operation = self.operationModeBox.currentIndex()
+        self.protocolIDBox.clear()
+        if operation in [0, 1]:
+            self.protocolIDBox.addItems(["0"])
+        elif operation in [2, 3, 4]:
+            self.protocolIDBox.addItems(["1", "2", "3", "4", "5"])
+        elif operation in [5, 6]:
+            self.protocolIDBox.addItems(["1", "2", "3", "4"])
+
     def updatePlots(self):
+        if self.mac:
+            self.batteryProgressBar.setProperty("value", get_last_data_prot(self).Batt_level)
+
         self.graph_item_1.clear()
         self.graph_item_2.clear()
         self.graph_item_3.clear()
 
-        data = np.sin(self.t + self.num)
-        data = np.sin(self.t + self.num)
-        data = np.sin(self.t + self.num)
-        self.graph_item_1.plot(self.t, data)
-        self.graph_item_2.plot(self.t, data)
-        self.graph_item_3.plot(self.t, data)
+        data1 = np.sin(self.t + self.num)
+        data2 = np.cos(self.t + self.num)
+        data3 = np.tan(self.t + self.num)
+        self.graph_item_1.plot(self.t, data1)
+        self.graph_item_2.plot(self.t, data2)
+        self.graph_item_3.plot(self.t, data3)
         self.num += 0.5
-        
+
 
 if __name__ == "__main__":
     import sys

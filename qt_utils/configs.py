@@ -1,20 +1,15 @@
 import pygatt
 from db.model import Config
 from db.api_db import add_config, update_config, get_config
-STATUS_DICT = {
-        "Configuracion por Bluetooth": 0,
-        "Configuracion via TCP en BD": 20,
-        "Conexion TCP continua": 21,
-        "Conexion TCP discontinua": 22,
-        "Conexion UDP": 23,
-        "BLE continua": 30,
-        "BLE discontinua": 31
-}
-
 
 def saveConfiguration(self):
-    # SEND CONFIG TO ESP
+    if not self.mac:
+        return
 
+    self.label_statusESP.setText("Desconectado")
+    # SEND CONFIG TO ESP
+    Status = self.STATUS_DICT[self.operationModeBox.currentText()]
+    ID_Protocol = int(self.protocolIDBox.currentText())
     val_boxes = [
         int(self.AccSamplingBox.toPlainText()).to_bytes(4, 'big'),
         int(self.AccSensibilityBox.toPlainText()).to_bytes(4, 'big'),
@@ -39,9 +34,12 @@ def saveConfiguration(self):
     # SAVE DATA IN DB
     self.consoleLog("Saving configuration...")
     lastConfig = get_config(self.mac)
+
     if lastConfig.count() == 1:
         try:
             new_config = {
+                "Status": Status,
+                "ID_Protocol": ID_Protocol,
                 "BMI270_sampling": int(self.AccSamplingBox.toPlainText()),
                 "BMI270_Acc_Sensibility": int(self.AccSensibilityBox.toPlainText()),
                 "BMI270_Gyro_Sensibility": int(self.GyroSensibilityBox.toPlainText()),
@@ -53,9 +51,11 @@ def saveConfiguration(self):
                 "Ssid": int(self.ssidBox.toPlainText()),
                 "Pass": int(self.passBox.toPlainText()),
             }
+
         except:
             self.consoleLog("Wrong configuration inputs")
         if update_config(self.mac, new_config):
+            self.device.char_write(self.deviceUUID, bytearray([2, Status, ID_Protocol]))
             self.consoleLog("Configuration saved")
         else:
             self.consoleLog("Error saving configuration")
@@ -63,8 +63,8 @@ def saveConfiguration(self):
         try:
             configs = Config(
                 mac = self.mac,
-                Status = 0,
-                ID_Protocol = 1,
+                Status = Status,
+                ID_Protocol = ID_Protocol,
                 BMI270_sampling = int(self.AccSamplingBox.toPlainText()),
                 BMI270_Acc_Sensibility = int(self.AccSensibilityBox.toPlainText()),
                 BMI270_Gyro_Sensibility = int(self.GyroSensibilityBox.toPlainText()),
@@ -80,16 +80,8 @@ def saveConfiguration(self):
             self.consoleLog("Wrong configuration inputs")
         if add_config(configs):
             self.consoleLog("Configuration saved")
+            self.device.char_write(self.deviceUUID, bytearray([2, Status, ID_Protocol]))
         else:
             self.consoleLog("Error saving configuration")
 
-def saveStatusProtocol(self):
-    # TODO: SAVE CONFIG IN DB
-    try:
-        Status = STATUS_DICT[self.operationModeBox.currentText()]
-        ID_Protocol = int(self.protocolIDBox.currentText())
-        value = "0000ff01-0000-1000-8000-00805F9B34FB"
-        self.device.char_write(value, bytearray([2, Status, ID_Protocol]))
-        self.consoleLog(f"Starting monitoring with Status {Status} and Protocol {ID_Protocol}")
-    except Exception as e:
-        self.consoleLog(f"Error - {e}")
+
