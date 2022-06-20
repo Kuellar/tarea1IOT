@@ -233,29 +233,29 @@ class Ui_Dialog(object):
         self.label_23.setGeometry(QtCore.QRect(500, 60, 71, 20))
         self.label_23.setStyleSheet("color: rgb(0, 0, 0);")
         self.label_23.setObjectName("label_23")
-        self.selectVariableButton = QtWidgets.QComboBox(self.tab_2)
-        self.selectVariableButton.setGeometry(QtCore.QRect(560, 60, 61, 21))
-        self.selectVariableButton.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.selectVariableButton.setObjectName("selectVariableButton")
-        self.selectVariableButton.addItem("")
-        self.selectVariableButton.addItem("")
-        self.selectVariableButton.addItem("")
-        self.selectVariableButton.addItem("")
-        self.selectVariableButton.addItem("")
-        self.selectVariableButton.addItem("")
-        self.selectVariableButton.addItem("")
-        self.selectVariableButton.addItem("")
+        self.selectVariableBox = QtWidgets.QComboBox(self.tab_2)
+        self.selectVariableBox.setGeometry(QtCore.QRect(560, 60, 61, 21))
+        self.selectVariableBox.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.selectVariableBox.setObjectName("selectVariableBox")
+        self.selectVariableBox.addItem("")
+        self.selectVariableBox.addItem("")
+        self.selectVariableBox.addItem("")
+        self.selectVariableBox.addItem("")
+        self.selectVariableBox.addItem("")
+        self.selectVariableBox.addItem("")
+        self.selectVariableBox.addItem("")
+        self.selectVariableBox.addItem("")
         self.label_25 = QtWidgets.QLabel(self.tab_2)
         self.label_25.setGeometry(QtCore.QRect(640, 60, 71, 20))
         self.label_25.setStyleSheet("color: rgb(0, 0, 0);")
         self.label_25.setObjectName("label_25")
-        self.selectPlotButton = QtWidgets.QComboBox(self.tab_2)
-        self.selectPlotButton.setGeometry(QtCore.QRect(720, 60, 61, 21))
-        self.selectPlotButton.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.selectPlotButton.setObjectName("selectPlotButton")
-        self.selectPlotButton.addItem("")
-        self.selectPlotButton.addItem("")
-        self.selectPlotButton.addItem("")
+        self.selectPlotBox = QtWidgets.QComboBox(self.tab_2)
+        self.selectPlotBox.setGeometry(QtCore.QRect(720, 60, 61, 21))
+        self.selectPlotBox.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.selectPlotBox.setObjectName("selectPlotBox")
+        self.selectPlotBox.addItem("")
+        self.selectPlotBox.addItem("")
+        self.selectPlotBox.addItem("")
         self.tabWidget.addTab(self.tab_2, "")
 
         self.retranslateUi(Dialog)
@@ -265,8 +265,8 @@ class Ui_Dialog(object):
         #### IMPLEMENTACION PROPIA
 
         self.protocol_list = [Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Protocol5]
-        #TODO: cambiar el protocolo por el que corresponda
         self.protocol = None
+        self.started_monitoring = False
         self.device = None
         self.deviceUUID = "0000ff01-0000-1000-8000-00805F9B34FB"
         self.mac = None
@@ -280,6 +280,7 @@ class Ui_Dialog(object):
             "BLE continua": 30,
             "BLE discontinua": 31
         }
+        
         self.time_data = np.array(20)
         self.battery_data = np.zeros(20)
         self.temp_data = np.zeros(20)
@@ -297,13 +298,38 @@ class Ui_Dialog(object):
         self.Acc_y_data = np.zeros(20)
         self.Acc_z_data = np.zeros(20)
 
+        self.PLOTS_DATA_DICT = {
+            "Batt_level": self.battery_data,
+            "Temp": self.temp_data,
+            "Press": self.press_data,
+            "Hum": self.hum_data,
+            "Co": self.co_data,
+            "RMS": self.RMS_data,
+            "Amp_x": self.Amp_x_data,
+            "Frec_x": self.Frec_x_data,
+            "Amp_y": self.Amp_y_data,
+            "Frec_y": self.Frec_y_data,
+            "Amp_z": self.Amp_z_data,
+            "Frec_z": self.Frec_z_data,
+            "Acc_x": self.Acc_x_data,
+            "Acc_y": self.Acc_y_data,
+            "Acc_z": self.Acc_z_data,
+        }
+
         self.searchBTButton.clicked.connect(lambda  x: searchConnectionBT(self))
         self.selectBTButton.clicked.connect(lambda  x: connectBT(self))
         self.saveConfButton.clicked.connect(lambda  x: saveConfiguration(self))
-        self.operationModeBox.currentIndexChanged.connect(lambda x: self.operationModeSelected())
+        self.startPlotButton.clicked.connect(self.startPlot)
+        self.stopPlotButton.clicked.connect(self.stopPlot)
+        self.startMonitoringButton.clicked.connect(self.startMonitoring)
+        self.stopMonitoringButton.clicked.connect(self.stopMonitoring)
 
 
         ### PLOT
+        # Aca guardaremos el array que corresponde a cada grafico
+        self.plots_data = np.array(["", "", ""])
+        self.plots_started = [False, False, False]
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.updatePlots)
         self.timer.start(500)
@@ -356,18 +382,18 @@ class Ui_Dialog(object):
         self.exportCSVButton.setText(_translate("Dialog", "exportar CSV"))
         self.stopPlotButton.setText(_translate("Dialog", "Detener"))
         self.label_23.setText(_translate("Dialog", "Variable"))
-        self.selectVariableButton.setItemText(0, _translate("Dialog", "Temperatura"))
-        self.selectVariableButton.setItemText(1, _translate("Dialog", "Humedad"))
-        self.selectVariableButton.setItemText(2, _translate("Dialog", "Co"))
-        self.selectVariableButton.setItemText(3, _translate("Dialog", "Presion"))
-        self.selectVariableButton.setItemText(4, _translate("Dialog", "Aceleracion Eje X"))
-        self.selectVariableButton.setItemText(5, _translate("Dialog", "Aceleracion Eje Y"))
-        self.selectVariableButton.setItemText(6, _translate("Dialog", "Aceleracion Eje Z"))
-        self.selectVariableButton.setItemText(7, _translate("Dialog", "RMS"))
+        self.selectVariableBox.setItemText(0, _translate("Dialog", "Temperatura"))
+        self.selectVariableBox.setItemText(1, _translate("Dialog", "Humedad"))
+        self.selectVariableBox.setItemText(2, _translate("Dialog", "Co"))
+        self.selectVariableBox.setItemText(3, _translate("Dialog", "Presion"))
+        self.selectVariableBox.setItemText(4, _translate("Dialog", "Aceleracion Eje X"))
+        self.selectVariableBox.setItemText(5, _translate("Dialog", "Aceleracion Eje Y"))
+        self.selectVariableBox.setItemText(6, _translate("Dialog", "Aceleracion Eje Z"))
+        self.selectVariableBox.setItemText(7, _translate("Dialog", "RMS"))
         self.label_25.setText(_translate("Dialog", "Selecion plot"))
-        self.selectPlotButton.setItemText(0, _translate("Dialog", "1"))
-        self.selectPlotButton.setItemText(1, _translate("Dialog", "2"))
-        self.selectPlotButton.setItemText(2, _translate("Dialog", "3"))
+        self.selectPlotBox.setItemText(0, _translate("Dialog", "1"))
+        self.selectPlotBox.setItemText(1, _translate("Dialog", "2"))
+        self.selectPlotBox.setItemText(2, _translate("Dialog", "3"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Visualizacion"))
 
     def consoleLog(self, line):
@@ -392,8 +418,42 @@ class Ui_Dialog(object):
             self.protocolIDBox.addItems(["1", "2", "3", "4"])
 
     def updatePlots(self):
-        pass
-        #updatePlots(self)
+        updatePlots(self)
+
+    def startPlot(self):
+        plot_index = self.selectPlotBox.currentIndex()
+        variable_index = self.selectVariableBox.currentIndex()
+        self.consoleLog(f"Start plot {plot_index} with variable {variable_index}")
+
+        #TODO: Que en vez de battery_data, sea segun variable_index
+        self.plots_data[plot_index] = "Batt_level"
+        self.plots_started[plot_index] = True
+    def stopPlot(self):
+        plot_index = self.selectPlotBox.currentIndex()
+        self.plots_started[plot_index] = False
+    
+    def setProtocol(self, protocol):
+        self.protocol = self.protocol_list[protocol]
+        if protocol == 1:
+            self.selectVariableBox.addItems(["Batt_level"])
+        if protocol == 2:
+            self.selectVariableBox.addItems(["Batt_level", "Temp", "Press", "Hum", "Co"])
+        if protocol == 3:
+            self.selectVariableBox.addItems(["Batt_level", "Temp", "Press", "Hum", "Co", "RMS"])
+        if protocol == 4:
+            self.selectVariableBox.addItems(["Batt_level", "Temp", "Press", "Hum", "Co", "RMS",
+                                                "Amp_x", "Frec_x", "Amp_y", "Frec_y", "Amp_z", "Frec_z"])
+        if protocol == 5:
+            self.selectVariableBox.addItems(["Batt_level", "Temp", "Press", "Hum", "Co",
+                                                "Acc_x", "Acc_y", "Acc_z"])
+
+    #TODO: Hacer que estos comiencen y finalicen el monitoreo
+    # Recordar que con protocolo 0 no se puede monitorear
+    def startMonitoring(self):
+        if self.protocol != self.protocol_list[0]:
+            self.started_monitoring = True
+    def stopMonitoring(self):
+        self.started_monitoring = False
     
 
 

@@ -2,18 +2,12 @@ from db.api_db import get_last_data_prot
 import numpy as np
 
 
-def updatePlots(self):
-        #TODO: Si estamos en protocolo 0, no podemos llamar a get_last_data_prot
-        #      asi que deberiamos guardar el protocolo en self.protocol para saber esto, creo
-        
-        if self.mac:
-            last_data = get_last_data_prot(self)
-            self.time_data = np.append(self.time_data, last_data.Timestamp.strftime("%M:%S"))[1:]
 
-            self.graph_item_1.clear()
-            self.graph_item_2.clear()
-            self.graph_item_3.clear()
-             
+def updatePlots(self):
+        if self.started_monitoring:
+            last_data = get_last_data_prot(self)
+            self.batteryProgressBar.setProperty("value", last_data.Batt_level)
+
             if self.protocol == self.protocol_list[1]:
                 self.battery_data = np.append(self.battery_data, last_data.Batt_level)[1:]
 
@@ -55,8 +49,21 @@ def updatePlots(self):
                 self.Acc_x_data = np.append(self.Acc_x_data, last_data.Acc_x)[1:]
                 self.Acc_y_data = np.append(self.Acc_y_data, last_data.Acc_y)[1:]
                 self.Acc_z_data = np.append(self.Acc_z_data, last_data.Acc_z)[1:]
-         
-            self.batteryProgressBar.setProperty("value", last_data.Batt_level)
-            self.graph_item_1.plot(self.x_plots, self.battery_data)
-            self.graph_item_2.plot(self.x_plots, self.battery_data)
-            self.graph_item_3.plot(self.x_plots, self.battery_data)
+
+            self.time_data = np.append(self.time_data, last_data.Timestamp.strftime("%M:%S"))[1:]
+            
+            if self.plots_started[0]:
+                self.graph_item_1.clear()
+                updatePlotsData(self.graph_item_1, self.time_data, self.plots_data[1])
+            if self.plots_started[1]:
+                self.graph_item_2.clear()
+                updatePlotsData(self.graph_item_2, self.time_data, self.plots_data[2])
+            if self.plots_started[2]:
+                self.graph_item_3.clear()
+                updatePlotsData(self.graph_item_3, self.time_data, self.plots_data[3])
+            updatePlotsData(self)
+ 
+def updatePlotsData(self):
+    self.graph_item_1.plot(self.time_data, self.PLOTS_DATA_DICT[self.plots_data[0]])
+    self.graph_item_2.plot(self.time_data, self.PLOTS_DATA_DICT[self.plots_data[1]])
+    self.graph_item_3.plot(self.time_data, self.PLOTS_DATA_DICT[self.plots_data[2]])

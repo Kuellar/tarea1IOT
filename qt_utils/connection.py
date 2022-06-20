@@ -107,6 +107,12 @@ def connectBT(self):
         self.operationModeSelected()
         index = self.protocolIDBox.findText(str(old_config[0].ID_Protocol), Qt.MatchFixedString)
         self.protocolIDBox.setCurrentIndex(index)
+        
+        # Guardamos el protocolo
+        self.setProtocol(self, old_config[0].ID_Protocol)
+        self.started_monitoring = False
+        self.selectVariableBox.clear()
+        
 
         if old_config[0].Status not in [0, 20]:
             self.AccSamplingBox.setDisabled(True)
@@ -130,7 +136,13 @@ def connectBT(self):
             self.hostIPAddrBox.setDisabled(False)
             self.ssidBox.setDisabled(False)
             self.passBox.setDisabled(False)
-            
+    
+    else:
+        # Guardamos el protocolo 0 si no hemos registrado el ESP32
+        self.setProtocol(self, 0)
+        self.started_monitoring = False
+        self.selectVariableBox.clear()
+        
     adapter = pygatt.backends.GATTToolBackend()
 
     self.consoleLog(f" Connecting to {device} ...")
