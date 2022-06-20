@@ -109,7 +109,7 @@ def connectBT(self):
         self.protocolIDBox.setCurrentIndex(index)
         
         # Guardamos el protocolo
-        self.setProtocol(self, old_config[0].ID_Protocol)
+        self.setProtocol(old_config[0].ID_Protocol)
         self.started_monitoring = False
         self.selectVariableBox.clear()
         
@@ -139,7 +139,7 @@ def connectBT(self):
     
     else:
         # Guardamos el protocolo 0 si no hemos registrado el ESP32
-        self.setProtocol(self, 0)
+        self.setProtocol(0)
         self.started_monitoring = False
         self.selectVariableBox.clear()
         
