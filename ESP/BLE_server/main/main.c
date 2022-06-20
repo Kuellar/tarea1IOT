@@ -1,6 +1,7 @@
 #include "BLE_server.h"
 #include "nvs.h"
 #include "data.h"
+#include <inttypes.h>
 
 //Varibles to know the BLE status and data exchange
 extern uint8_t *rx_data, rx_len;
@@ -22,11 +23,11 @@ void app_main(void)
     esp_read_mac(mac_wifi, ESP_MAC_WIFI_STA);
     esp_read_mac(mac_bt, ESP_MAC_BT);
     printf(
-        "MAC wifi: %d:%d:%d:%d:%d:%d\n",
+        "MAC wifi: %X:%X:%X:%X:%X:%X\n",
         mac_wifi[0],mac_wifi[1],mac_wifi[2],mac_wifi[3],mac_wifi[4],mac_wifi[5]
     );
     printf(
-        "MAC bt: %d:%d:%d:%d:%d:%d\n",
+        "MAC bt: %X:%X:%X:%X:%X:%X\n",
         mac_bt[0],mac_bt[1],mac_bt[2],mac_bt[3],mac_bt[4],mac_bt[5]
     );
 
@@ -64,15 +65,15 @@ void app_main(void)
         bool inicio_status_30 = true;
         while(1){
             vTaskDelay(200);
+            int32_t protocol;
+            Read_NVS(&protocol, 2);
+
             if(is_Aconnected && inicio_status_30){
                 printf("Connection established\n");
                 printf("gatts_if %d, conn_id: %d, handle %d\n", gl_profile_tab[PROFILE_A_APP_ID].gatts_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle); 
                 inicio_status_30 = false;
-                printf("Sending data protocol 1...\n");
+                printf("Sending data protocol: %" PRIu32 "\n",protocol);
             }
-
-            int32_t protocol;
-            Read_NVS(&protocol, 2);
 
             if(is_Aconnected && notificationA_enable){
                 switch (protocol)

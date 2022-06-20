@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include <inttypes.h>
 
 Sensor_Data_0 get_protocol_0(int8_t status) {
     // READ BASE MAC
@@ -80,10 +81,9 @@ Sensor_Data_3 get_protocol_3(int8_t status) {
     esp_base_mac_addr_get(base_mac);
 
     // SENSORS DATA
-    int32_t Amp_x = ((int32_t)esp_random() / UINT32_MAX) * (0.12 - 0.0059) + 0.0059;
-    int32_t Amp_y = ((int32_t)esp_random() / UINT32_MAX) * (0.11 - 0.0041) + 0.0041;
-    int32_t Amp_z = ((int32_t)esp_random() / UINT32_MAX) * (0.15 - 0.008) + 0.008;
-    int32_t RMS = sqrtf(powf(Amp_x, 2) + powf(Amp_y, 2) + powf(Amp_z, 2));
+    float Amp_xf = ((float)esp_random() / UINT32_MAX) * (0.12 - 0.0059) + 0.0059;
+    float Amp_yf = ((float)esp_random() / UINT32_MAX) * (0.11 - 0.0041) + 0.0041;
+    float Amp_zf = ((float)esp_random() / UINT32_MAX) * (0.15 - 0.008) + 0.008;
 
     Sensor_Data_3 res;
     // HEADER
@@ -108,7 +108,11 @@ Sensor_Data_3 get_protocol_3(int8_t status) {
     res.Co[1] = (uint8_t)(co>>=8);
     res.Co[0] = (uint8_t)(co>>=8);
 
-    memcpy(res.RMS, &RMS, sizeof(res.RMS));
+    int32_t RMS = sqrtf(powf(Amp_xf, 2) + powf(Amp_yf, 2) + powf(Amp_zf, 2)) * 100000000;
+    res.RMS[3] = (uint8_t)RMS;
+    res.RMS[2] = (uint8_t)(RMS>>=8);
+    res.RMS[1] = (uint8_t)(RMS>>=8);
+    res.RMS[0] = (uint8_t)(RMS>>=8);
 
     return res;
 }
@@ -120,13 +124,12 @@ Sensor_Data_4 get_protocol_4(int8_t status) {
     esp_base_mac_addr_get(base_mac);
 
     // SENSORS DATA
-    int32_t Amp_x = ((int32_t)esp_random() / UINT32_MAX) * (0.12 - 0.0059) + 0.0059;
-    int32_t Frec_x = ((int32_t)esp_random() / UINT32_MAX) * (31 - 29) + 29;
-    int32_t Amp_y = ((int32_t)esp_random() / UINT32_MAX) * (0.11 - 0.0041) + 0.0041;
-    int32_t Frec_y = ((int32_t)esp_random() / UINT32_MAX) * (61 - 59) + 59;
-    int32_t Amp_z = ((int32_t)esp_random() / UINT32_MAX) * (0.15 - 0.008) + 0.008;
-    int32_t Frec_z = ((int32_t)esp_random() / UINT32_MAX) * (91 - 89) + 89;
-    int32_t RMS = sqrtf(powf(Amp_x, 2) + powf(Amp_y, 2) + powf(Amp_z, 2));
+    float Amp_xf = ((float)esp_random() / UINT32_MAX) * (0.12 - 0.0059) + 0.0059;
+    float Frec_xf = ((float)esp_random() / UINT32_MAX) * (31 - 29) + 29;
+    float Amp_yf = ((float)esp_random() / UINT32_MAX) * (0.11 - 0.0041) + 0.0041;
+    float Frec_yf = ((float)esp_random() / UINT32_MAX) * (61 - 59) + 59;
+    float Amp_zf = ((float)esp_random() / UINT32_MAX) * (0.15 - 0.008) + 0.008;
+    float Frec_zf = ((float)esp_random() / UINT32_MAX) * (91 - 89) + 89;
 
     Sensor_Data_4 res;
     // HEADER
@@ -151,13 +154,47 @@ Sensor_Data_4 get_protocol_4(int8_t status) {
     res.Co[1] = (uint8_t)(co>>=8);
     res.Co[0] = (uint8_t)(co>>=8);
 
-    memcpy(res.RMS, &RMS, sizeof(res.RMS));
-    memcpy(res.Amp_x_bmi, &Amp_x, sizeof(res.Amp_x_bmi));
-    memcpy(res.Frec_x_bmi, &Frec_x, sizeof(res.Frec_x_bmi));
-    memcpy(res.Amp_y_bmi, &Amp_y, sizeof(res.Amp_y_bmi));
-    memcpy(res.Frec_y_bmi, &Frec_y, sizeof(res.Frec_y_bmi));
-    memcpy(res.Amp_z_bmi, &Amp_z, sizeof(res.Amp_z_bmi));
-    memcpy(res.Frec_z_bmi, &Frec_z, sizeof(res.Frec_z_bmi));
+    int32_t RMS = sqrtf(powf(Amp_xf, 2) + powf(Amp_yf, 2) + powf(Amp_zf, 2)) * 100000000;
+    res.RMS[3] = (uint8_t)RMS;
+    res.RMS[2] = (uint8_t)(RMS>>=8);
+    res.RMS[1] = (uint8_t)(RMS>>=8);
+    res.RMS[0] = (uint8_t)(RMS>>=8);
+
+    int32_t Amp_x = Amp_xf * 100000000;
+    res.Amp_x_bmi[3] = (uint8_t)Amp_x;
+    res.Amp_x_bmi[2] = (uint8_t)(Amp_x>>=8);
+    res.Amp_x_bmi[1] = (uint8_t)(Amp_x>>=8);
+    res.Amp_x_bmi[0] = (uint8_t)(Amp_x>>=8);
+
+    int32_t Frec_x = Frec_xf * 1000000;
+    res.Frec_x_bmi[3] = (uint8_t)Frec_x;
+    res.Frec_x_bmi[2] = (uint8_t)(Frec_x>>=8);
+    res.Frec_x_bmi[1] = (uint8_t)(Frec_x>>=8);
+    res.Frec_x_bmi[0] = (uint8_t)(Frec_x>>=8);
+
+    int32_t Amp_y = Amp_yf * 100000000;
+    res.Amp_y_bmi[3] = (uint8_t)Amp_y;
+    res.Amp_y_bmi[2] = (uint8_t)(Amp_y>>=8);
+    res.Amp_y_bmi[1] = (uint8_t)(Amp_y>>=8);
+    res.Amp_y_bmi[0] = (uint8_t)(Amp_y>>=8);
+
+    int32_t Frec_y = Frec_yf * 1000000;
+    res.Frec_y_bmi[3] = (uint8_t)Frec_y;
+    res.Frec_y_bmi[2] = (uint8_t)(Frec_y>>=8);
+    res.Frec_y_bmi[1] = (uint8_t)(Frec_y>>=8);
+    res.Frec_y_bmi[0] = (uint8_t)(Frec_y>>=8);
+
+    int32_t Amp_z = Amp_zf * 100000000;
+    res.Amp_z_bmi[3] = (uint8_t)Amp_z;
+    res.Amp_z_bmi[2] = (uint8_t)(Amp_z>>=8);
+    res.Amp_z_bmi[1] = (uint8_t)(Amp_z>>=8);
+    res.Amp_z_bmi[0] = (uint8_t)(Amp_z>>=8);
+
+    int32_t Frec_z = Frec_zf * 1000000;
+    res.Frec_z_bmi[3] = (uint8_t)Frec_z;
+    res.Frec_z_bmi[2] = (uint8_t)(Frec_z>>=8);
+    res.Frec_z_bmi[1] = (uint8_t)(Frec_z>>=8);
+    res.Frec_z_bmi[0] = (uint8_t)(Frec_z>>=8);
 
     return res;
 }

@@ -1,4 +1,4 @@
-from sqlalchemy import (DateTime, Column, Integer, SmallInteger, BigInteger, ForeignKey, JSON)
+from sqlalchemy import (DateTime, Column, Integer, SmallInteger, BigInteger, ForeignKey, JSON, Numeric)
 from sqlalchemy.orm import declarative_base
 
 
@@ -61,7 +61,7 @@ class Protocol3(base):
     Press = Column(Integer)
     Hum = Column(SmallInteger)
     Co = Column(Integer)
-    RMS = Column(Integer)
+    RMS = Column(Numeric)
 
 
 class Protocol4(base):
@@ -75,13 +75,13 @@ class Protocol4(base):
     Press = Column(Integer)
     Hum = Column(SmallInteger)
     Co = Column(Integer)
-    RMS = Column(Integer)
-    Amp_x = Column(Integer)
-    Frec_x = Column(Integer)
-    Amp_y = Column(Integer)
-    Frec_y = Column(Integer)
-    Amp_z = Column(Integer)
-    Frec_z = Column(Integer)
+    RMS = Column(Numeric)
+    Amp_x = Column(Numeric)
+    Frec_x = Column(Numeric)
+    Amp_y = Column(Numeric)
+    Frec_y = Column(Numeric)
+    Amp_z = Column(Numeric)
+    Frec_z = Column(Numeric)
 
 
 class Protocol5(base):

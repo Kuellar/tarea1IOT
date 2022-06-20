@@ -149,6 +149,7 @@ def connectBT(self):
     try:
         adapter.start()
         self.device = adapter.connect(device_address)
+        mtu = self.device.exchange_mtu(60)
         self.consoleLog(f" Connected to {device} ...")
         self.device.subscribe(self.deviceUUID, callback=handle_data, wait_for_response=False)
         self.label_statusESP.setText("Conectado")

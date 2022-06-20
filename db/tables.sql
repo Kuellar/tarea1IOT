@@ -12,8 +12,8 @@ bigint    8 byte - int64_t
 timestamp 4 byte
 */
 
-CREATE DATABASE `tarea_iot_v2`;
-USE tarea_iot_v2;
+CREATE DATABASE `tarea_iot_v3`;
+USE tarea_iot_v3;
 
 /* Configuración por Bluetooth (status=0) */
 CREATE TABLE `config` (
@@ -84,7 +84,7 @@ CREATE TABLE `protocol_3` (
     `Press` int NOT NULL,
     `Hum` tinyint NOT NULL,
     `Co` int NOT NULL,
-    `RMS` int NOT NULL,
+    `RMS` DECIMAL(8,8) NOT NULL,
 
     /* KEY */
     PRIMARY KEY(id),
@@ -101,13 +101,13 @@ CREATE TABLE `protocol_4` (
     `Press` int NOT NULL,
     `Hum` tinyint NOT NULL,
     `Co` int NOT NULL,
-    `RMS` int NOT NULL,
-    `Amp_x` int NOT NULL,
-    `Frec_x` int NOT NULL,
-    `Amp_y` int NOT NULL,
-    `Frec_y` int NOT NULL,
-    `Amp_z` int NOT NULL,
-    `Frec_z` int NOT NULL,
+    `RMS` DECIMAL(8,8) NOT NULL,
+    `Amp_x` DECIMAL(8,8) NOT NULL,
+    `Frec_x` DECIMAL(8,6) NOT NULL,
+    `Amp_y` DECIMAL(8,8) NOT NULL,
+    `Frec_y` DECIMAL(8,6) NOT NULL,
+    `Amp_z` DECIMAL(8,8) NOT NULL,
+    `Frec_z` DECIMAL(8,6) NOT NULL,
 
     /* KEY */
     PRIMARY KEY(id),
