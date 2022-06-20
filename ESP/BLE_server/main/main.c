@@ -2,6 +2,7 @@
 #include "nvs.h"
 #include "data.h"
 #include <inttypes.h>
+#include "esp_sleep.h"
 
 //Varibles to know the BLE status and data exchange
 extern uint8_t *rx_data, rx_len;
@@ -32,7 +33,7 @@ void app_main(void)
     );
 
     // READ STATUS
-    int32_t status, new_status;
+    int32_t status, new_status, protocol;
     Read_NVS(&status, 1);
 
     // VARS
@@ -65,7 +66,6 @@ void app_main(void)
         bool inicio_status_30 = true;
         while(1){
             vTaskDelay(200);
-            int32_t protocol;
             Read_NVS(&protocol, 2);
 
             if(is_Aconnected && inicio_status_30){
@@ -116,6 +116,61 @@ void app_main(void)
         break;
     case 31:
         /* BLE discontinua */
+        BLE_server_Init(500);
+
+        vTaskDelay(200);
+        Read_NVS(&protocol, 2);
+
+        // WAIT FOR CONECTION
+        while(!is_Aconnected) {
+            vTaskDelay(500);
+        }
+
+        printf("Connection established\n");
+        printf("gatts_if %d, conn_id: %d, handle %d\n", gl_profile_tab[PROFILE_A_APP_ID].gatts_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle);
+        printf("Sending data protocol: %" PRIu32 "\n", protocol);
+        vTaskDelay(500);
+
+        if(notificationA_enable){
+            switch (protocol)
+            {
+            case 1:
+                tx_len = 14;
+                data1 = get_protocol_1((int8_t) status);
+                memcpy(tx_data, &data1, sizeof(Sensor_Data_1));
+                ESP_ERROR_CHECK(BLE_send(tx_len, tx_data, false));
+                break;
+            case 2:
+                tx_len = 24;
+                data2 = get_protocol_2((int8_t) status);
+                memcpy(tx_data, &data2, sizeof(Sensor_Data_2));
+                ESP_ERROR_CHECK(BLE_send(tx_len, tx_data, false));
+                break;
+            case 3:
+                tx_len = 28;
+                data3 = get_protocol_3((int8_t) status);
+                memcpy(tx_data, &data3, sizeof(Sensor_Data_3));
+                ESP_ERROR_CHECK(BLE_send(tx_len, tx_data, false));
+                break;
+            case 4:
+                tx_len = 52;
+                data4 = get_protocol_4((int8_t) status);
+                memcpy(tx_data, &data4, sizeof(Sensor_Data_4));
+                ESP_ERROR_CHECK(BLE_send(tx_len, tx_data, false));
+
+                break;
+            default:
+                break;
+            }
+        }
+        vTaskDelay(500);
+
+        Read_NVS(&new_status, 1);
+        if (status != new_status) break;
+
+        printf("Deep Sleep \n");
+        ESP_ERROR_CHECK(esp_bt_controller_disable());
+        esp_deep_sleep(1e6 * 5); // microsecond
         break;
     default:
         /* Configuración por Bluetooth */
