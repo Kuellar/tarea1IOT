@@ -12,10 +12,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QTimer
 import pyqtgraph as pg
 import numpy as np
-from db.api_db import get_last_data_prot
-from db.model import Config, Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Protocol5
+from db.model import Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Protocol5
 from qt_utils.connection import searchConnectionBT, connectBT
 from qt_utils.configs import saveConfiguration
+from qt_utils.plots import updatePlots
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -264,8 +264,9 @@ class Ui_Dialog(object):
 
         #### IMPLEMENTACION PROPIA
 
-        self.protocols = [Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Protocol5]
-
+        self.protocol_list = [Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Protocol5]
+        #TODO: cambiar el protocolo por el que corresponda
+        self.protocol = None
         self.device = None
         self.deviceUUID = "0000ff01-0000-1000-8000-00805F9B34FB"
         self.mac = None
@@ -279,6 +280,22 @@ class Ui_Dialog(object):
             "BLE continua": 30,
             "BLE discontinua": 31
         }
+        self.time_data = np.array(20)
+        self.battery_data = np.zeros(20)
+        self.temp_data = np.zeros(20)
+        self.press_data = np.zeros(20)
+        self.hum_data = np.zeros(20)
+        self.co_data = np.zeros(20)
+        self.RMS_data = np.zeros(20)
+        self.Amp_x_data = np.zeros(20)
+        self.Frec_x_data = np.zeros(20)
+        self.Amp_y_data = np.zeros(20)
+        self.Frec_y_data = np.zeros(20)
+        self.Amp_z_data = np.zeros(20)
+        self.Frec_z_data = np.zeros(20)
+        self.Acc_x_data = np.zeros(20)
+        self.Acc_y_data = np.zeros(20)
+        self.Acc_z_data = np.zeros(20)
 
         self.searchBTButton.clicked.connect(lambda  x: searchConnectionBT(self))
         self.selectBTButton.clicked.connect(lambda  x: connectBT(self))
@@ -293,15 +310,14 @@ class Ui_Dialog(object):
 
         self.graph_item_1 = pg.PlotItem()
         self.plot1.addItem(self.graph_item_1)
-
+        
         self.graph_item_2 = pg.PlotItem()
         self.plot2.addItem(self.graph_item_2)
-
+    
         self.graph_item_3 = pg.PlotItem()
         self.plot3.addItem(self.graph_item_3)
-
-        self.t = np.linspace(0, 2*np.pi, 1000)
-        self.num = 0.01
+        
+        
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
@@ -376,20 +392,9 @@ class Ui_Dialog(object):
             self.protocolIDBox.addItems(["1", "2", "3", "4"])
 
     def updatePlots(self):
-        if self.mac:
-            self.batteryProgressBar.setProperty("value", get_last_data_prot(self).Batt_level)
-
-        self.graph_item_1.clear()
-        self.graph_item_2.clear()
-        self.graph_item_3.clear()
-
-        data1 = np.sin(self.t + self.num)
-        data2 = np.cos(self.t + self.num)
-        data3 = np.tan(self.t + self.num)
-        self.graph_item_1.plot(self.t, data1)
-        self.graph_item_2.plot(self.t, data2)
-        self.graph_item_3.plot(self.t, data3)
-        self.num += 0.5
+        pass
+        #updatePlots(self)
+    
 
 
 if __name__ == "__main__":

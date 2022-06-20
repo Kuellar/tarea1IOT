@@ -1,4 +1,3 @@
-import pygatt
 from db.model import Config
 from db.api_db import add_config, update_config, get_config
 

@@ -1,7 +1,5 @@
 import os
 from PyQt5.QtCore import QCoreApplication, QObject, QThread, pyqtSignal, Qt
-from time import sleep
-import re
 from db.api_db import save_data_1, save_data_2, save_data_3, save_data_4, get_config
 import pygatt
 from dotenv import load_dotenv
@@ -132,11 +130,7 @@ def connectBT(self):
             self.hostIPAddrBox.setDisabled(False)
             self.ssidBox.setDisabled(False)
             self.passBox.setDisabled(False)
-
-
-    # mac_string = ":".join(re.findall("..", "%012x"%mac_int))
-    # print(mac_string)
-
+            
     adapter = pygatt.backends.GATTToolBackend()
 
     self.consoleLog(f" Connecting to {device} ...")
