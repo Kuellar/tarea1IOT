@@ -16,6 +16,8 @@ from db.model import Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Prot
 from qt_utils.connection import searchConnectionBT, connectBT
 from qt_utils.configs import saveConfiguration
 from qt_utils.plots import updatePlots, getVariablesList
+from sockets.server_udp import initUdpServer
+from sockets.server_tcp import initTcpServer
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -453,6 +455,9 @@ class Ui_Dialog(object):
         elif var == "Acc_z": return self.Acc_z_data
         else: return np.zeros(20)
 
+    def initSockets(self):
+        initUdpServer()
+        initTcpServer()
 
 if __name__ == "__main__":
     import sys
