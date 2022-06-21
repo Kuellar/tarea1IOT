@@ -296,5 +296,31 @@ def save_data_4(header, data):
     )
     add_data(db_data)
 
+def drop_tables():
+    engine = start_connection()
+    if not engine:
+        return
+    SessionFactory = sessionmaker(engine)
+    with SessionFactory() as session:
+        try:
+            total_data = session.query(Protocol0).delete()
+            total_data += session.query(Protocol1).delete()
+            total_data += session.query(Protocol2).delete()
+            total_data += session.query(Protocol3).delete()
+            total_data += session.query(Protocol4).delete()
+            total_data += session.query(Protocol5).delete()
+            session.commit()
+            total_data += session.query(Config).delete()
+            session.commit()
+            print("TOTAL DATA REMOVED: ", total_data)
+        except:
+            session.rollback()
+            print("FAIL")
+        finally:
+            session.close()
+            return True
+
 # CHECK DB
 # print(get_all_configs())
+# CLEAN DB
+# drop_tables()
