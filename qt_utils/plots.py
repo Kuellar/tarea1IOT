@@ -4,9 +4,12 @@ import numpy as np
 
 
 def updatePlots(self):
-        if self.started_monitoring:
-            last_data = get_last_data_prot(self)
+        last_data = get_last_data_prot(self)
+        try:
             self.batteryProgressBar.setProperty("value", last_data.Batt_level)
+        except:
+            pass
+        if self.started_monitoring:
 
             if self.protocol == self.protocol_list[1]:
                 self.battery_data = np.append(self.battery_data, last_data.Batt_level)[1:]
@@ -51,19 +54,20 @@ def updatePlots(self):
                 self.Acc_z_data = np.append(self.Acc_z_data, last_data.Acc_z)[1:]
 
             self.time_data = np.append(self.time_data, last_data.Timestamp.strftime("%M:%S"))[1:]
-            
             if self.plots_started[0]:
                 self.graph_item_1.clear()
-                updatePlotsData(self.graph_item_1, self.time_data, self.plots_data[1])
+                updatePlotsData(self, 0)
             if self.plots_started[1]:
                 self.graph_item_2.clear()
-                updatePlotsData(self.graph_item_2, self.time_data, self.plots_data[2])
+                updatePlotsData(self, 1)
             if self.plots_started[2]:
                 self.graph_item_3.clear()
-                updatePlotsData(self.graph_item_3, self.time_data, self.plots_data[3])
-            updatePlotsData(self)
+                updatePlotsData(self, 2)
  
-def updatePlotsData(self):
-    self.graph_item_1.plot(self.time_data, self.PLOTS_DATA_DICT[self.plots_data[0]])
-    self.graph_item_2.plot(self.time_data, self.PLOTS_DATA_DICT[self.plots_data[1]])
-    self.graph_item_3.plot(self.time_data, self.PLOTS_DATA_DICT[self.plots_data[2]])
+def updatePlotsData(self, idx):
+    if idx == 0:
+        self.graph_item_1.plot(np.array(list(range(20))), self.getPlotData(self.plots_data[0]))
+    elif idx == 1:
+        self.graph_item_2.plot(np.array(list(range(20))), self.getPlotData(self.plots_data[1]))
+    elif idx == 2:
+        self.graph_item_3.plot(np.array(list(range(20))), self.getPlotData(self.plots_data[2]))

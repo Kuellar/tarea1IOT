@@ -217,11 +217,6 @@ class Ui_Dialog(object):
 "background-color: rgb(0, 115, 0);\n"
 "")
         self.startPlotButton.setObjectName("startPlotButton")
-        self.exportCSVButton = QtWidgets.QPushButton(self.tab_2)
-        self.exportCSVButton.setGeometry(QtCore.QRect(590, 150, 101, 41))
-        self.exportCSVButton.setStyleSheet("color: rgb(213, 213, 213);\n"
-"background-color: rgb(44, 44, 44);")
-        self.exportCSVButton.setObjectName("exportCSVButton")
         self.stopPlotButton = QtWidgets.QPushButton(self.tab_2)
         self.stopPlotButton.setGeometry(QtCore.QRect(650, 100, 101, 41))
         self.stopPlotButton.setMinimumSize(QtCore.QSize(101, 41))
@@ -265,8 +260,8 @@ class Ui_Dialog(object):
         #### IMPLEMENTACION PROPIA
 
         self.protocol_list = [Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Protocol5]
-        self.protocol = None
-        self.started_monitoring = False
+        self.protocol = None  # Protocolo al monitorear - Guardado al conectar
+        self.started_monitoring = False  # Al pulsar iniciar monitoreo
         self.device = None
         self.deviceUUID = "0000ff01-0000-1000-8000-00805F9B34FB"
         self.mac = None
@@ -281,7 +276,7 @@ class Ui_Dialog(object):
             "BLE discontinua": 31
         }
         
-        self.time_data = np.array(20)
+        self.time_data = np.zeros(20)  # Eje X
         self.battery_data = np.zeros(20)
         self.temp_data = np.zeros(20)
         self.press_data = np.zeros(20)
@@ -298,24 +293,6 @@ class Ui_Dialog(object):
         self.Acc_y_data = np.zeros(20)
         self.Acc_z_data = np.zeros(20)
 
-        self.PLOTS_DATA_DICT = {
-            "Batt_level": self.battery_data,
-            "Temp": self.temp_data,
-            "Press": self.press_data,
-            "Hum": self.hum_data,
-            "Co": self.co_data,
-            "RMS": self.RMS_data,
-            "Amp_x": self.Amp_x_data,
-            "Frec_x": self.Frec_x_data,
-            "Amp_y": self.Amp_y_data,
-            "Frec_y": self.Frec_y_data,
-            "Amp_z": self.Amp_z_data,
-            "Frec_z": self.Frec_z_data,
-            "Acc_x": self.Acc_x_data,
-            "Acc_y": self.Acc_y_data,
-            "Acc_z": self.Acc_z_data,
-        }
-
         self.searchBTButton.clicked.connect(lambda  x: searchConnectionBT(self))
         self.selectBTButton.clicked.connect(lambda  x: connectBT(self))
         self.saveConfButton.clicked.connect(lambda  x: saveConfiguration(self))
@@ -327,7 +304,7 @@ class Ui_Dialog(object):
 
         ### PLOT
         # Aca guardaremos el array que corresponde a cada grafico
-        self.plots_data = np.array(["", "", ""])
+        self.plots_data = np.array(["", "", ""], dtype=object)
         self.plots_started = [False, False, False]
 
         self.timer = QTimer()
@@ -379,7 +356,6 @@ class Ui_Dialog(object):
         self.label_26.setText(_translate("Dialog", "Modo de operacion"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Configuracion"))
         self.startPlotButton.setText(_translate("Dialog", "Inicio"))
-        self.exportCSVButton.setText(_translate("Dialog", "exportar CSV"))
         self.stopPlotButton.setText(_translate("Dialog", "Detener"))
         self.label_23.setText(_translate("Dialog", "Variable"))
         self.selectVariableBox.setItemText(0, _translate("Dialog", "Temperatura"))
@@ -428,12 +404,14 @@ class Ui_Dialog(object):
         #TODO: Que en vez de battery_data, sea segun variable_index
         self.plots_data[plot_index] = "Batt_level"
         self.plots_started[plot_index] = True
+
     def stopPlot(self):
         plot_index = self.selectPlotBox.currentIndex()
         self.plots_started[plot_index] = False
     
     def setProtocol(self, protocol):
         self.protocol = self.protocol_list[protocol]
+        self.selectVariableBox.clear()
         if protocol == 1:
             self.selectVariableBox.addItems(["Batt_level"])
         if protocol == 2:
@@ -454,7 +432,24 @@ class Ui_Dialog(object):
             self.started_monitoring = True
     def stopMonitoring(self):
         self.started_monitoring = False
-    
+
+    def getPlotData(self, var):
+        if var == "Batt_level": return self.battery_data
+        elif var == "Temp": return self.temp_data
+        elif var == "Press": return self.press_data
+        elif var == "Hum": return self.hum_data
+        elif var == "Co": return self.co_data
+        elif var == "RMS": return self.RMS_data
+        elif var == "Amp_x": return self.Amp_x_data
+        elif var == "Frec_x": return self.Frec_x_data
+        elif var == "Amp_y": return self.Amp_y_data
+        elif var == "Frec_y": return self.Frec_y_data
+        elif var == "Amp_z": return self.Amp_z_data
+        elif var == "Frec_z": return self.Frec_z_data
+        elif var == "Acc_x": return self.Acc_x_data
+        elif var == "Acc_y": return self.Acc_y_data
+        elif var == "Acc_z": return self.Acc_z_data
+        else: return np.zeros(20)
 
 
 if __name__ == "__main__":
