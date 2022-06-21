@@ -397,14 +397,14 @@ class Ui_Dialog(object):
         updatePlots(self)
     
     def getVariablesList(self):
-        getVariablesList(self)
+        return getVariablesList(self)
 
     def startPlot(self):
         plot_index = self.selectPlotBox.currentIndex()
         variable_index = self.selectVariableBox.currentIndex()
         self.consoleLog(f"Start plot {plot_index} with variable {variable_index}")
 
-        self.plots_data[plot_index] = self.getVariablesList[variable_index]
+        self.plots_data[plot_index] = self.getVariablesList()[variable_index]
         self.plots_started[plot_index] = True
 
     def stopPlot(self):

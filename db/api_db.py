@@ -60,11 +60,11 @@ def get_last_data_prot(self):
     with SessionFactory() as session:
         try:
             ID_Protocol = session.query(Config).filter(Config.mac == self.mac).first().ID_Protocol
-            self.setProtocol(ID_Protocol)
+            # self.setProtocol(ID_Protocol)
             data = (session
-                .query(self.protocol)
-                .filter(self.protocol.mac == self.mac)
-                .order_by(self.protocol.Timestamp.desc())
+                .query(self.protocol_list[ID_Protocol])
+                .filter(self.protocol_list[ID_Protocol].mac == self.mac)
+                .order_by(self.protocol_list[ID_Protocol].Timestamp.desc())
                 .first()
             )
         except:

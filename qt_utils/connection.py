@@ -108,12 +108,11 @@ def connectBT(self):
         self.operationModeSelected()
         index = self.protocolIDBox.findText(str(old_config[0].ID_Protocol), Qt.MatchFixedString)
         self.protocolIDBox.setCurrentIndex(index)
-        
+
         # Guardamos el protocolo
         self.setProtocol(old_config[0].ID_Protocol)
         self.started_monitoring = False
-        self.selectVariableBox.clear()
-        
+
 
         if old_config[0].Status not in [0, 20]:
             self.AccSamplingBox.setDisabled(True)
