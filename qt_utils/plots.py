@@ -71,3 +71,17 @@ def updatePlotsData(self, idx):
         self.graph_item_2.plot(np.array(list(range(20))), self.getPlotData(self.plots_data[1]))
     elif idx == 2:
         self.graph_item_3.plot(np.array(list(range(20))), self.getPlotData(self.plots_data[2]))
+
+def getVariablesList(self):
+    if self.protocol == self.protocol_list[0]:
+        return []
+    elif self.protocol == self.protocol_list[1]:
+        return ["Batt_level"]
+    elif self.protocol == self.protocol_list[2]:
+        return ["Batt_level", "Temp", "Press", "Hum", "Co"]
+    elif self.protocol == self.protocol_list[3]:
+        return ["Batt_level", "Temp", "Press", "Hum", "Co", "RMS"]
+    elif self.protocol == self.protocol_list[4]:
+        return ["Batt_level", "Temp", "Press", "Hum", "Co", "RMS", "Amp_x", "Frec_x", "Amp_y", "Frec_y", "Amp_z", "Frec_z"]
+    elif self.protocol == self.protocol_list[5]:
+        return ["Batt_level", "Temp", "Press", "Hum", "Co", "Acc_x", "Acc_y", "Acc_z"]

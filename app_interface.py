@@ -15,7 +15,7 @@ import numpy as np
 from db.model import Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Protocol5
 from qt_utils.connection import searchConnectionBT, connectBT
 from qt_utils.configs import saveConfiguration
-from qt_utils.plots import updatePlots
+from qt_utils.plots import updatePlots, getVariablesList
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -395,14 +395,16 @@ class Ui_Dialog(object):
 
     def updatePlots(self):
         updatePlots(self)
+    
+    def getVariablesList(self):
+        getVariablesList(self)
 
     def startPlot(self):
         plot_index = self.selectPlotBox.currentIndex()
         variable_index = self.selectVariableBox.currentIndex()
         self.consoleLog(f"Start plot {plot_index} with variable {variable_index}")
 
-        #TODO: Que en vez de battery_data, sea segun variable_index
-        self.plots_data[plot_index] = "Batt_level"
+        self.plots_data[plot_index] = self.getVariablesList[variable_index]
         self.plots_started[plot_index] = True
 
     def stopPlot(self):
