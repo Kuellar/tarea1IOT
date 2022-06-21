@@ -18,14 +18,25 @@ def saveConfiguration(self):
         int(self.portTCPBox.toPlainText()).to_bytes(4, 'big'),
         int(self.portUDPBox.toPlainText()).to_bytes(4, 'big'),
         int(self.hostIPAddrBox.toPlainText()).to_bytes(4, 'big'),
-        int(self.ssidBox.toPlainText()).to_bytes(4, 'big'),
-        int(self.passBox.toPlainText()).to_bytes(4, 'big'),
     ]
 
     for idx, val_box in enumerate(val_boxes):
         esp_data = (
             bytearray((3).to_bytes(1, 'big')) +
             bytearray((idx+3).to_bytes(1, 'big')) +
+            bytearray(val_box)
+        )
+        self.device.char_write(self.deviceUUID, esp_data)
+
+    val_boxex_text = [
+        bytes(self.ssidBox.toPlainText(), 'utf-8'),
+        bytes(self.passBox.toPlainText(), 'utf-8'),
+    ]
+
+    for idx, val_box in enumerate(val_boxex_text):
+        esp_data = (
+            bytearray((4).to_bytes(1, 'big')) +
+            bytearray((idx+11).to_bytes(1, 'big')) +
             bytearray(val_box)
         )
         self.device.char_write(self.deviceUUID, esp_data)
@@ -47,8 +58,8 @@ def saveConfiguration(self):
                 "Port_TCP": int(self.portTCPBox.toPlainText()),
                 "Port_UDP": int(self.portUDPBox.toPlainText()),
                 "Host_Ip_Addr": int(self.hostIPAddrBox.toPlainText()),
-                "Ssid": int(self.ssidBox.toPlainText()),
-                "Pass": int(self.passBox.toPlainText()),
+                "Ssid": self.ssidBox.toPlainText(),
+                "Pass": self.passBox.toPlainText(),
             }
 
         except:
@@ -72,8 +83,8 @@ def saveConfiguration(self):
                 Port_TCP = int(self.portTCPBox.toPlainText()),
                 Port_UDP = int(self.portUDPBox.toPlainText()),
                 Host_Ip_Addr = int(self.hostIPAddrBox.toPlainText()),
-                Ssid = int(self.ssidBox.toPlainText()),
-                Pass = int(self.passBox.toPlainText()),
+                Ssid = self.ssidBox.toPlainText(),
+                Pass = self.passBox.toPlainText(),
             )
         except:
             self.consoleLog("Wrong configuration inputs")

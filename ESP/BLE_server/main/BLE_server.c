@@ -1,31 +1,3 @@
-/**
- * BLE workflow for each app:
- *  1.- APP is registered, which triggers ESP_GATTS_REG_EVT:
- *          Here de BLE device name is seted using esp_ble_gap_set_device_name()
- *          Advertising data is configured using esp_ble_gap_config_adv_data()
- *          Scan response is configures using esp_ble_gap_config_adv_data()
- *  2.- Service is created, which triggers ESP_GATTS_CREATE_EVT:
- *          To start the service esp_ble_gatts_start_service() is used
- *          Also a characteristic is added using esp_ble_gatts_add_char()
- *  3.- Service is started, which triggers ESP_GATTS_START_EVT  
- *  4.- Characterictic is aded, which triggers ESP_GATTS_ADD_CHAR_EVT:
- *          A characteristic description is added using the esp_ble_gatts_add_char_descr()
- *  5.- The descriptor addition triggers an ESP_GATTS_ADD_CHAR_DESCR_EVT:
- *          The descriptor handle is save into the profile_tab
- * 
- * When a client has connected a ESP_GATTS_CONNECT_EVT is triggered:
- *  1.- The connection parameters are updated and sended to the peer device
- *  2.- Connection parameters update triggers an ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT
- * When the server is read an ESP_GATTS_READ_EVT is triggered:
- *  1.- Here the corresponding information is sended.
- * When the server is writed an ESP_GATTS_WRITE_EVT is triggered:
- *  1.- Here are managed the notification and indication suscription
- *  2.- Also, it can be managed a write long characteristic request
- * When the client is disconnected ESP_GATTS_DISCONNECT_EVT is triggered:
- *  1.- This is used to star advertising again       
- * */
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -335,6 +307,14 @@ void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gat
             if (param->write.value[0] == 3) {
                 int32_t data_config = (param->write.value[2] << 24) | (param->write.value[3] << 16) | (param->write.value[4] << 8) | param->write.value[5];
                 Write_NVS(data_config, param->write.value[1]);
+            }
+            if (param->write.value[0] == 4) {
+                char data_str_r[param->write.len - 2];
+                for(int i = 0; i < sizeof(data_str_r); i++){
+                    data_str_r[i] = param->write.value[i+2];
+                }
+                // printf("TEST:%s\n", data_str_r);
+                Write_NVS_str(data_str_r, param->write.value[1]);
             }
 
             write_EVT = true;

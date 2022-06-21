@@ -1,2 +1,2 @@
-idf_component_register(SRCS "main.c" "BLE_server.c" "nvs.c" "data.c"
+idf_component_register(SRCS "WIFI_client.c" "main.c" "BLE_server.c" "WIFI_client.c" "nvs.c" "data.c"
                     INCLUDE_DIRS "." "include")

@@ -1,4 +1,4 @@
-from sqlalchemy import (DateTime, Column, Integer, SmallInteger, BigInteger, ForeignKey, JSON, Numeric)
+from sqlalchemy import (DateTime, Column, Integer, SmallInteger, BigInteger, ForeignKey, JSON, Numeric, String)
 from sqlalchemy.orm import declarative_base
 
 
@@ -16,8 +16,8 @@ class Config(base):
     Port_TCP = Column(Integer)
     Port_UDP = Column(Integer)
     Host_Ip_Addr = Column(Integer)
-    Ssid = Column(Integer)
-    Pass = Column(Integer)
+    Ssid = Column(String)
+    Pass = Column(String)
 
 
 class Protocol0(base):

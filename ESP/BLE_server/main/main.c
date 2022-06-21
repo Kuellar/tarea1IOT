@@ -1,4 +1,5 @@
 #include "BLE_server.h"
+#include "WIFI_client.h"
 #include "nvs.h"
 #include "data.h"
 #include <inttypes.h>
@@ -31,10 +32,19 @@ void app_main(void)
         "MAC bt: %X:%X:%X:%X:%X:%X\n",
         mac_bt[0],mac_bt[1],mac_bt[2],mac_bt[3],mac_bt[4],mac_bt[5]
     );
+    // WIFI
+    esp_err_t wifi_status;
 
     // READ STATUS
-    int32_t status, new_status, protocol;
-    Read_NVS(&status, 1);
+    int32_t status, new_status, protocol, deep_sleep_time;
+    esp_err_t err_read_status;
+
+    err_read_status = Read_NVS(&status, 1);
+    if (err_read_status == ESP_ERR_NVS_NOT_FOUND) {
+        Write_NVS(0,0);  // STATUS 0
+        Write_NVS(0,1);  // PROTOCOL 0
+        Read_NVS(&status, 1);
+    }
 
     // VARS
     // Sensor_Data_0 data0;
@@ -49,6 +59,20 @@ void app_main(void)
     {
     case 20:
         /* Configuración vía TCP en BD  */
+        wifi_status = connect_wifi();
+        printf("%d", wifi_status);
+        if (WIFI_SUCCESS != wifi_status) {
+            ESP_LOGI(WIFI_TAG, "Failed to associate to AP, dying...");
+            break;
+        }
+
+        // status = connect_UDP_server();
+        // if (UDP_SUCCESS != status)
+        // {
+        //     ESP_LOGI(WIFI_TAG, "Failed to connect to remote server, dying...");
+        //     return;
+        // }
+        vTaskDelay(5000);
         break;
     case 21:
         /* Conexión TCP continua  */
@@ -168,9 +192,15 @@ void app_main(void)
         Read_NVS(&new_status, 1);
         if (status != new_status) break;
 
-        printf("Deep Sleep \n");
+        err_read_status = Read_NVS(&deep_sleep_time, 7);
+        if (err_read_status == ESP_ERR_NVS_NOT_FOUND || deep_sleep_time > 60) {
+            printf("ERROR: Deep Sleep\n");
+            Write_NVS(0,0);  // STATUS 0
+            Write_NVS(0,1);  // PROTOCOL 0
+        }
+        printf("Deep sleep for: %" PRIu32 " seconds\n", deep_sleep_time);
         ESP_ERROR_CHECK(esp_bt_controller_disable());
-        esp_deep_sleep(1e6 * 5); // microsecond
+        esp_deep_sleep(1e6 * deep_sleep_time); // microsecond
         break;
     default:
         /* Configuración por Bluetooth */

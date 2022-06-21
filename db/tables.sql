@@ -12,8 +12,8 @@ bigint    8 byte - int64_t
 timestamp 4 byte
 */
 
-CREATE DATABASE `tarea_iot_v3`;
-USE tarea_iot_v3;
+CREATE DATABASE `tarea_iot_v4`;
+USE tarea_iot_v4;
 
 /* Configuración por Bluetooth (status=0) */
 CREATE TABLE `config` (
@@ -28,8 +28,8 @@ CREATE TABLE `config` (
     `Port_TCP` int NOT NULL,
     `Port_UDP` int NOT NULL,
     `Host_Ip_Addr` int NOT NULL,
-    `Ssid` int NOT NULL,
-    `Pass` int NOT NULL,
+    `Ssid` VARCHAR(20) CHARACTER SET utf8 NOT NULL,
+    `Pass` VARCHAR(20) CHARACTER SET utf8 NOT NULL,
 
     /* KEY */
     PRIMARY KEY(mac)
