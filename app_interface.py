@@ -456,8 +456,8 @@ class Ui_Dialog(object):
         else: return np.zeros(20)
 
     def initSockets(self):
-        initUdpServer()
-        initTcpServer()
+        initUdpServer(self)
+        initTcpServer(self)
 
 if __name__ == "__main__":
     import sys
@@ -465,5 +465,6 @@ if __name__ == "__main__":
     Dialog = QtWidgets.QDialog()
     ui = Ui_Dialog()
     ui.setupUi(Dialog)
+    ui.initSockets()
     Dialog.show()
     sys.exit(app.exec_())

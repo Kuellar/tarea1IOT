@@ -15,8 +15,9 @@
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
 
-#include "WIFI_client.h"
 #include "nvs.h"
+#include "WIFI_client.h"
+#include "data.h"
 
 /** GLOBALS **/
 
@@ -26,7 +27,7 @@ static EventGroupHandle_t wifi_event_group;
 // retry tracker
 static int s_retry_num = 0;
 
-unsigned char payload[19227];
+uint8_t* tx_data;
 
 // event handler for wifi events
 void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
@@ -83,6 +84,7 @@ esp_err_t connect_wifi(){
     }
 
     // FIX newline bug
+    WIFI_PASS[required_size_pass-1] = '\0';
     WIFI_SSID[strcspn(WIFI_SSID, "\n")] = '\0';
     WIFI_PASS[strcspn(WIFI_PASS, "\n")] = '\0';
     printf("WIFI SSID: %s.\n", WIFI_SSID);
@@ -158,11 +160,11 @@ esp_err_t connect_wifi(){
 
     // xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually happened.
     if (bits & WIFI_SUCCESS){
-        ESP_LOGI(WIFI_TAG, "Connected to ap");
+        ESP_LOGI(WIFI_TAG, "Connected to WIFI");
         status = WIFI_SUCCESS;
     }
     else if (bits & WIFI_FAILURE){
-        ESP_LOGI(WIFI_TAG, "Failed to connect to ap");
+        ESP_LOGI(WIFI_TAG, "Failed to connect to WIFI");
         status = WIFI_FAILURE;
     }
     else{
@@ -178,13 +180,23 @@ esp_err_t connect_wifi(){
     return status;
 }
 
-esp_err_t connect_UDP_server(){
+esp_err_t connect_UDP_server(int32_t status){
     struct sockaddr_in serverInfo = {0};
-    char readBuffer[2] = {0};
+
+    int32_t UDP_PORT, protocol, new_status, new_protocol;
+    esp_err_t err_read_status;
+    int err;
+
+    err_read_status = Read_NVS(&UDP_PORT, 9);
+    if (err_read_status == ESP_ERR_NVS_NOT_FOUND) {
+        Write_NVS(0, 1);  // STATUS 0
+        Write_NVS(0, 2);  // PROTOCOL 0
+        return UDP_FAILURE;
+    }
 
     serverInfo.sin_family = AF_INET;
-    serverInfo.sin_addr.s_addr = UDP_HOST;
-    serverInfo.sin_port = htons(UDP_PORT);
+    serverInfo.sin_addr.s_addr = HOST;
+    serverInfo.sin_port = (uint16_t) UDP_PORT;
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock < 0){
@@ -194,37 +206,94 @@ esp_err_t connect_UDP_server(){
 
     if (connect(sock, (struct sockaddr *)&serverInfo, sizeof(serverInfo)) != 0){
         ESP_LOGE(WIFI_TAG, "Failed to connect to %s!", inet_ntoa(serverInfo.sin_addr.s_addr));
+        ESP_LOGE(WIFI_TAG, "PORT %d!", serverInfo.sin_port);
         close(sock);
         return UDP_FAILURE;
     }
 
     ESP_LOGI(WIFI_TAG, "Connected to UDP server.");
+    ESP_LOGI(WIFI_TAG, "ADDR %s!", inet_ntoa(serverInfo.sin_addr.s_addr));
+    ESP_LOGI(WIFI_TAG, "PORT %d!", serverInfo.sin_port);
 
-    /*
     // CONECTADO A UDP
-    bzero(readBuffer, sizeof(readBuffer));
-    // PROTOCOL 4
-    ESP_LOGI(WIFI_TAG, "Antes del for");
-    for (;;)
-    {
-        bzero(payload, sizeof(payload));
-        get_protocol_4(payload);
-        ESP_LOGI(WIFI_TAG, "Antes de enviar");
-        int err = send(sock, payload, sizeof(payload), 0);
-        ESP_LOGI(WIFI_TAG, "Despues de enviar");
+    char readBuffer[2] = {0};  // NEW STATUS - PROTOCOL
+    tx_data = (uint8_t*) malloc(sizeof(Sensor_Data_5));
+    Sensor_Data_1 data1;
+    Sensor_Data_2 data2;
+    Sensor_Data_3 data3;
+    Sensor_Data_4 data4;
+    Sensor_Data_5 data5;
+    for (;;){
+        bzero(readBuffer, sizeof(readBuffer));
+        // SEND DATA
+        Read_NVS(&protocol, 2);
+        switch (protocol){
+        case 1:
+            data1 = get_protocol_1((int8_t) status);
+            memcpy(tx_data, &data1, sizeof(Sensor_Data_1));
+            err = send(sock, tx_data, sizeof(Sensor_Data_1), 0);
+            break;
+        case 2:
+            data2 = get_protocol_2((int8_t) status);
+            memcpy(tx_data, &data2, sizeof(Sensor_Data_2));
+            err = send(sock, tx_data, sizeof(Sensor_Data_2), 0);
+            break;
+        case 3:
+            data3 = get_protocol_3((int8_t) status);
+            memcpy(tx_data, &data3, sizeof(Sensor_Data_3));
+            err = send(sock, tx_data, sizeof(Sensor_Data_3), 0);
+            break;
+        case 4:
+            data4 = get_protocol_4((int8_t) status);
+            memcpy(tx_data, &data4, sizeof(Sensor_Data_4));
+            err = send(sock, tx_data, sizeof(Sensor_Data_4), 0);
+            break;
+        case 5:
+            data5 = get_protocol_5((int8_t) status);
+            memcpy(tx_data, &data5, sizeof(Sensor_Data_5));
+            err = send(sock, tx_data, sizeof(Sensor_Data_5), 0);
+            break;
+        default:
+            break;
+        }
+
+        // RECEIVE DATA
+        int len = recv(sock, readBuffer, sizeof(readBuffer), 0);
+        new_status = (int32_t) readBuffer[0];
+        new_protocol = (int32_t) readBuffer[1];
+
+        // CHANGE PROTOCOL
+        if (protocol != new_protocol) {
+            Write_NVS(new_protocol, 2);
+        }
+
+        // CHANGE STATUS
+        if (status != new_status) {
+            Write_NVS(new_status, 1);
+            return UDP_SUCCESS;
+        }
     }
-    */
 
     return UDP_SUCCESS;
 }
 
-esp_err_t connect_TCP_server() {
+esp_err_t connect_TCP_server(int32_t status) {
     struct sockaddr_in serverInfo = {0};
-    char readBuffer[2] = {0};
+
+    int32_t TCP_PORT, protocol, new_status, new_protocol;
+    esp_err_t err_read_status;
+    int err ;
+
+    err_read_status = Read_NVS(&TCP_PORT, 8);
+    if (err_read_status == ESP_ERR_NVS_NOT_FOUND) {
+        Write_NVS(0, 1);  // STATUS 0
+        Write_NVS(0, 2);  // PROTOCOL 0
+        return TCP_FAILURE;
+    }
 
     serverInfo.sin_family = AF_INET;
-    // serverInfo.sin_addr.s_addr = TCP_HOST;
-    // serverInfo.sin_port = htons(TCP_PORT);
+    serverInfo.sin_addr.s_addr = HOST;
+    serverInfo.sin_port = (uint16_t) TCP_PORT;
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0){
@@ -235,57 +304,78 @@ esp_err_t connect_TCP_server() {
     if (connect(sock, (struct sockaddr *)&serverInfo, sizeof(serverInfo)) != 0)
     {
         ESP_LOGE(WIFI_TAG, "Failed to connect to %s!", inet_ntoa(serverInfo.sin_addr.s_addr));
+        ESP_LOGE(WIFI_TAG, "PORT %d!", serverInfo.sin_port);
         close(sock);
         return TCP_FAILURE;
     }
 
     ESP_LOGI(WIFI_TAG, "Connected to TCP server.");
+    ESP_LOGI(WIFI_TAG, "ADDR %s!", inet_ntoa(serverInfo.sin_addr.s_addr));
+    ESP_LOGI(WIFI_TAG, "PORT %d!", serverInfo.sin_port);
 
-    // for (;;)
-    // {
-    //     // CONECTADO A TCP
-    //     bzero(readBuffer, sizeof(readBuffer));
-    //     unsigned char payload[55];
+    // CONECTADO A TCP
+    char readBuffer[2] = {0};  // NEW STATUS - PROTOCOL
+    tx_data = (uint8_t*) malloc(sizeof(Sensor_Data_5));
+    Sensor_Data_1 data1;
+    Sensor_Data_2 data2;
+    Sensor_Data_3 data3;
+    Sensor_Data_4 data4;
+    Sensor_Data_5 data5;
+    for (;;){
+        bzero(readBuffer, sizeof(readBuffer));
+        // SEND DATA
+        Read_NVS(&protocol, 2);
+        switch (protocol){
+        case 1:
+            data1 = get_protocol_1((int8_t) status);
+            memcpy(tx_data, &data1, sizeof(Sensor_Data_1));
+            err = send(sock, tx_data, sizeof(Sensor_Data_1), 0);
+            break;
+        case 2:
+            data2 = get_protocol_2((int8_t) status);
+            memcpy(tx_data, &data2, sizeof(Sensor_Data_2));
+            err = send(sock, tx_data, sizeof(Sensor_Data_2), 0);
+            break;
+        case 3:
+            data3 = get_protocol_3((int8_t) status);
+            memcpy(tx_data, &data3, sizeof(Sensor_Data_3));
+            err = send(sock, tx_data, sizeof(Sensor_Data_3), 0);
+            break;
+        case 4:
+            data4 = get_protocol_4((int8_t) status);
+            memcpy(tx_data, &data4, sizeof(Sensor_Data_4));
+            err = send(sock, tx_data, sizeof(Sensor_Data_4), 0);
+            break;
+        case 5:
+            data5 = get_protocol_5((int8_t) status);
+            memcpy(tx_data, &data5, sizeof(Sensor_Data_5));
+            err = send(sock, tx_data, sizeof(Sensor_Data_5), 0);
+            break;
+        default:
+            break;
+        }
 
-    //     bzero(payload, sizeof(payload));
-    //     // PROTOCOL 0
+        // RECEIVE DATA
+        int len = recv(sock, readBuffer, sizeof(readBuffer), 0);
+        new_status = (int32_t) readBuffer[0];
+        new_protocol = (int32_t) readBuffer[1];
 
-    //     switch (protocolo_actual)
-    //     {
-    //     case 0:
-    //         ESP_LOGI(TAG, "Protocolo 0");
-    //         get_protocol_0(payload, 0, 6);
-    //         protocolo_actual = 1;
-    //         break;
-    //     case 1:
-    //         ESP_LOGI(TAG, "Protocolo 1");
-    //         get_protocol_1(payload, 1, 16);
-    //         protocolo_actual = 2;
-    //         break;
-    //     case 2:
-    //         ESP_LOGI(TAG, "Protocolo 2");
-    //         get_protocol_2(payload, 2, 20);
-    //         protocolo_actual = 3;
-    //         break;
-    //     case 3:
-    //         ESP_LOGI(TAG, "Protocolo 3");
-    //         get_protocol_3(payload, 3, 44);
-    //         protocolo_actual = 4;
-    //         break;
-    //     }
+        // CHANGE PROTOCOL
+        if (protocol != new_protocol) {
+            Write_NVS(new_protocol, 2);
+        }
 
-    //     int err = send(sock, payload, sizeof(payload), 0);
-    //     int len = recv(sock, readBuffer, sizeof(readBuffer) - 1, 0);
+        // CHANGE STATUS
+        if (status != new_status) {
+            Write_NVS(new_status, 1);
+            return TCP_SUCCESS;
+        }
 
-    //     if (protocolo_actual == 4)
-    //     {
-    //         int vacio = send(sock, 0, 0, 0); // Corta la conexion
-    //         break;
-    //     }
+        // DEEP SLEEP
+        if (status == 22) {
+            return TCP_SUCCESS;
+        }
+    }
 
-    //     shutdown(sock, 0);
-    //     close(sock);
-    //     esp_deep_sleep(1e6 * 60);
-    // }
     return TCP_SUCCESS;
 }

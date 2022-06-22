@@ -17,13 +17,11 @@
 
 #define WIFI_TAG "WIFI"
 
-/** SERVER UDP **/
-#define UDP_HOST 0x0104A8C0
-#define UDP_PORT 5001
+// HOST
+// #define HOST 0x0104A8C0
 
-/** SERVER TCP **/
-#define TCP_HOST 0x0104A8C0
-#define TCP_PORT 5001
+// HOST Nacho
+#define HOST 0x7501a8c0
 
 /** DEFINES **/
 #define WIFI_SUCCESS 1 << 0
@@ -38,5 +36,5 @@ void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id
 void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 
 esp_err_t connect_wifi();
-esp_err_t connect_UDP_server();
-esp_err_t connect_TCP_server();
+esp_err_t connect_UDP_server(int32_t status);
+esp_err_t connect_TCP_server(int32_t status);

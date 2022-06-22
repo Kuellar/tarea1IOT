@@ -41,8 +41,8 @@ void app_main(void)
 
     err_read_status = Read_NVS(&status, 1);
     if (err_read_status == ESP_ERR_NVS_NOT_FOUND) {
-        Write_NVS(0,0);  // STATUS 0
-        Write_NVS(0,1);  // PROTOCOL 0
+        Write_NVS(0, 1);  // STATUS 0
+        Write_NVS(0, 2);  // PROTOCOL 0
         Read_NVS(&status, 1);
     }
 
@@ -60,28 +60,109 @@ void app_main(void)
     case 20:
         /* Configuración vía TCP en BD  */
         wifi_status = connect_wifi();
-        printf("%d", wifi_status);
         if (WIFI_SUCCESS != wifi_status) {
-            ESP_LOGI(WIFI_TAG, "Failed to associate to AP, dying...");
+            ESP_LOGI(WIFI_TAG, "Failed to connect wifi");
+            Write_NVS(0, 1);  // STATUS 0
+            Write_NVS(0, 2);  // PROTOCOL 0
             break;
         }
 
-        // status = connect_UDP_server();
-        // if (UDP_SUCCESS != status)
-        // {
-        //     ESP_LOGI(WIFI_TAG, "Failed to connect to remote server, dying...");
-        //     return;
-        // }
-        vTaskDelay(5000);
+        for (int i = 0; i < 3; i++){
+            wifi_status = connect_TCP_server(status);
+            if (TCP_SUCCESS == wifi_status) break;
+        }
+        if (TCP_SUCCESS != wifi_status) {
+            ESP_LOGI(WIFI_TAG, "Failed to connect to remote server");
+            Write_NVS(0, 1);  // STATUS 0
+            Write_NVS(0, 2);  // PROTOCOL 0
+        }
+
+        vTaskDelay(1000);
         break;
     case 21:
         /* Conexión TCP continua  */
+        for (int i = 0; i < 3; i++){
+            wifi_status = connect_wifi();
+            if (WIFI_SUCCESS == wifi_status) break;
+        }
+        if (WIFI_SUCCESS != wifi_status) {
+            ESP_LOGI(WIFI_TAG, "Failed to connect wifi");
+            Write_NVS(0, 1);  // STATUS 0
+            Write_NVS(0, 2);  // PROTOCOL 0
+            break;
+        }
+
+        for (int i = 0; i < 3; i++){
+            wifi_status = connect_TCP_server(status);
+            if (TCP_SUCCESS == wifi_status) break;
+        }
+        if (TCP_SUCCESS != wifi_status) {
+            ESP_LOGI(WIFI_TAG, "Failed to connect to remote server");
+            Write_NVS(0, 1);  // STATUS 0
+            Write_NVS(0, 2);  // PROTOCOL 0
+        }
+
+        vTaskDelay(1000);
         break;
     case 22:
         /* Conexión TCP discontinua */
+        wifi_status = connect_wifi();
+        for (int i = 0; i < 3; i++){
+            wifi_status = connect_wifi();
+            if (WIFI_SUCCESS == wifi_status) break;
+        }
+        if (WIFI_SUCCESS != wifi_status) {
+            ESP_LOGI(WIFI_TAG, "Failed to connect wifi");
+            Write_NVS(0, 1);  // STATUS 0
+            Write_NVS(0, 2);  // PROTOCOL 0
+            break;
+        }
+
+        for (int i = 0; i < 3; i++){
+            wifi_status = connect_TCP_server(status);
+            if (TCP_SUCCESS == wifi_status) break;
+        }
+        if (TCP_SUCCESS != wifi_status) {
+            ESP_LOGI(WIFI_TAG, "Failed to connect to remote server");
+            Write_NVS(0, 1);  // STATUS 0
+            Write_NVS(0, 2);  // PROTOCOL 0
+        }
+
+        err_read_status = Read_NVS(&deep_sleep_time, 7);
+        if (err_read_status == ESP_ERR_NVS_NOT_FOUND || deep_sleep_time > 60) {
+            printf("ERROR: Deep Sleep\n");
+            Write_NVS(0, 1);  // STATUS 0
+            Write_NVS(0, 2);  // PROTOCOL 0
+        }
+        printf("Deep sleep for: %" PRIu32 " seconds\n", deep_sleep_time);
+        ESP_ERROR_CHECK(esp_wifi_stop());
+        esp_deep_sleep(1e6 * deep_sleep_time); // microsecond
         break;
     case 23:
         /* Conexión UDP */
+        for (int i = 0; i < 3; i++){
+            wifi_status = connect_wifi();
+            if (WIFI_SUCCESS == wifi_status) break;
+        }
+        if (WIFI_SUCCESS != wifi_status) {
+            ESP_LOGI(WIFI_TAG, "Failed to connect wifi");
+            Write_NVS(0, 1);  // STATUS 0
+            Write_NVS(0, 2);  // PROTOCOL 0
+            break;
+        }
+
+        for (int i = 0; i < 3; i++){
+            wifi_status = connect_UDP_server(status);
+            if (UDP_SUCCESS == wifi_status) break;
+        }
+        if (UDP_SUCCESS != wifi_status) {
+            ESP_LOGI(WIFI_TAG, "Failed to connect to remote server");
+            Write_NVS(0, 1);  // STATUS 0
+            Write_NVS(0, 2);  // PROTOCOL 0
+        }
+
+
+        vTaskDelay(1000);
         break;
     case 30:
         /* BLE continua */
@@ -195,8 +276,8 @@ void app_main(void)
         err_read_status = Read_NVS(&deep_sleep_time, 7);
         if (err_read_status == ESP_ERR_NVS_NOT_FOUND || deep_sleep_time > 60) {
             printf("ERROR: Deep Sleep\n");
-            Write_NVS(0,0);  // STATUS 0
-            Write_NVS(0,1);  // PROTOCOL 0
+            Write_NVS(0, 1);  // STATUS 0
+            Write_NVS(0, 2);  // PROTOCOL 0
         }
         printf("Deep sleep for: %" PRIu32 " seconds\n", deep_sleep_time);
         ESP_ERROR_CHECK(esp_bt_controller_disable());
