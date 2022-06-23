@@ -18,10 +18,10 @@
 #define WIFI_TAG "WIFI"
 
 // HOST
-// #define HOST 0x0104A8C0
+#define HOST 0x0104A8C0
 
 // HOST Nacho
-#define HOST 0x7501a8c0
+// #define HOST 0x7501a8c0
 
 /** DEFINES **/
 #define WIFI_SUCCESS 1 << 0
