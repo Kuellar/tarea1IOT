@@ -459,6 +459,12 @@ class Ui_Dialog(object):
         initUdpServer(self)
         initTcpServer(self)
 
+    def setConnected(self, connected):
+        if connected:
+            self.label_statusESP.setText("Conectado")
+        else:
+            self.label_statusESP.setText("Desconectado")
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

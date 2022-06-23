@@ -61,7 +61,6 @@ void app_main(void)
         /* Configuración vía TCP en BD  */
         wifi_status = connect_wifi();
         if (WIFI_SUCCESS != wifi_status) {
-            ESP_LOGI(WIFI_TAG, "Failed to connect wifi");
             Write_NVS(0, 1);  // STATUS 0
             Write_NVS(0, 2);  // PROTOCOL 0
             break;
@@ -81,12 +80,8 @@ void app_main(void)
         break;
     case 21:
         /* Conexión TCP continua  */
-        for (int i = 0; i < 3; i++){
-            wifi_status = connect_wifi();
-            if (WIFI_SUCCESS == wifi_status) break;
-        }
+        wifi_status = connect_wifi();
         if (WIFI_SUCCESS != wifi_status) {
-            ESP_LOGI(WIFI_TAG, "Failed to connect wifi");
             Write_NVS(0, 1);  // STATUS 0
             Write_NVS(0, 2);  // PROTOCOL 0
             break;
@@ -107,12 +102,7 @@ void app_main(void)
     case 22:
         /* Conexión TCP discontinua */
         wifi_status = connect_wifi();
-        for (int i = 0; i < 3; i++){
-            wifi_status = connect_wifi();
-            if (WIFI_SUCCESS == wifi_status) break;
-        }
         if (WIFI_SUCCESS != wifi_status) {
-            ESP_LOGI(WIFI_TAG, "Failed to connect wifi");
             Write_NVS(0, 1);  // STATUS 0
             Write_NVS(0, 2);  // PROTOCOL 0
             break;
@@ -140,12 +130,8 @@ void app_main(void)
         break;
     case 23:
         /* Conexión UDP */
-        for (int i = 0; i < 3; i++){
-            wifi_status = connect_wifi();
-            if (WIFI_SUCCESS == wifi_status) break;
-        }
+        wifi_status = connect_wifi();
         if (WIFI_SUCCESS != wifi_status) {
-            ESP_LOGI(WIFI_TAG, "Failed to connect wifi");
             Write_NVS(0, 1);  // STATUS 0
             Write_NVS(0, 2);  // PROTOCOL 0
             break;

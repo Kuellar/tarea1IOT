@@ -1,6 +1,7 @@
 import os
 from PyQt5.QtCore import QCoreApplication, QObject, QThread, pyqtSignal, Qt
 from db.api_db import save_data_1, save_data_2, save_data_3, save_data_4, get_config
+from db.utils import translateData
 import pygatt
 from dotenv import load_dotenv
 load_dotenv()
@@ -50,35 +51,23 @@ def searchConnectionBT(self):
 
 
 ## SUBSCRIBE HANDLER
-def handle_data(handle, value):
-    if len(value) < 9:
+def handleData(handle, value):
+    header, body = translateData(value)
+    if not header or not body:
         return
-    protocol = int.from_bytes(value[0:1], byteorder="big")
-    if protocol not in [0, 1, 2, 3, 4, 5]:
-        return
-    status = int.from_bytes(value[1:2], byteorder="big")
-    if status not in [0, 20, 21, 22, 23, 30, 31]:
-        return
-    mac = int.from_bytes(value[2:8], byteorder="big")
-    leng_msg = int.from_bytes(value[8:9], byteorder="big")
-    header = {
-        "protocol": protocol,
-        "status": status,
-        "mac": mac,
-        "leng_msg": leng_msg
-     }
-    # print(header)
 
-    body = value[9:]
-    if header["protocol"] == 1 and len(body) == 5:
-        save_data_1(header, body)
-    if header["protocol"] == 2 and len(body) == 15:
-        save_data_2(header, body)
-    if header["protocol"] == 3 and len(body) == 19:
-        save_data_3(header, body)
-    if header["protocol"] == 4 and len(body) == 43:
-        save_data_4(header, body)
+    saved = False
+    if header["protocol"] == 1:
+        saved = save_data_1(header, body)
+    elif header["protocol"] == 2:
+        saved = save_data_2(header, body)
+    elif header["protocol"] == 3:
+        saved = save_data_3(header, body)
+    elif header["protocol"] == 4:
+        saved = save_data_4(header, body)
 
+    if not saved:
+        print("BD ERROR")
 
 ## SUBSCRIBE
 def connectBT(self):
@@ -151,7 +140,7 @@ def connectBT(self):
         self.device = adapter.connect(device_address)
         self.device.exchange_mtu(60)
         self.consoleLog(f" Connected to {device} ...")
-        self.device.subscribe(self.deviceUUID, callback=handle_data, wait_for_response=False)
+        self.device.subscribe(self.deviceUUID, callback=handleData, wait_for_response=False)
         self.label_statusESP.setText("Conectado")
     except Exception as e:
         adapter.stop()

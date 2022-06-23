@@ -30,7 +30,7 @@
 #define UDP_FAILURE 1 << 1
 #define TCP_SUCCESS 1 << 0
 #define TCP_FAILURE 1 << 1
-#define MAX_FAILURES 10
+#define MAX_FAILURES 6
 
 void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
