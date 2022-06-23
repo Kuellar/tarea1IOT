@@ -13,7 +13,7 @@ class WorkerUdpServer(QObject):
 
     def run(self):
         HOST = os.getenv('HOST')
-        PORT = int(os.getenv('UPD_PORT'))
+        PORT = int(os.getenv('UDP_PORT'))
         print("INIT UDP PORT: ", PORT)
         while True:
             try:

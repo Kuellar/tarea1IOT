@@ -302,6 +302,7 @@ class Ui_Dialog(object):
         self.stopPlotButton.clicked.connect(self.stopPlot)
         self.startMonitoringButton.clicked.connect(self.startMonitoring)
         self.stopMonitoringButton.clicked.connect(self.stopMonitoring)
+        self.operationModeBox.currentIndexChanged.connect(self.operationModeSelected)
 
 
         ### PLOT
