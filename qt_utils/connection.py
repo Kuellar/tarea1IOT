@@ -1,6 +1,6 @@
 import os
 from PyQt5.QtCore import QCoreApplication, QObject, QThread, pyqtSignal, Qt
-from db.api_db import save_data_1, save_data_2, save_data_3, save_data_4, get_config
+from db.api_db import save_data_0, save_data_1, save_data_2, save_data_3, save_data_4, get_config
 from db.utils import translateData
 import pygatt
 from dotenv import load_dotenv
@@ -57,7 +57,9 @@ def handleData(handle, value):
         return
 
     saved = False
-    if header["protocol"] == 1:
+    if header["protocol"] == 0:
+        saved = save_data_0(header, body)
+    elif header["protocol"] == 1:
         saved = save_data_1(header, body)
     elif header["protocol"] == 2:
         saved = save_data_2(header, body)

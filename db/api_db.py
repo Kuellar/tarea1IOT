@@ -120,6 +120,13 @@ def add_data(data):
             session.close()
             return False
 
+def save_data_0(header, body):
+    db_data = Protocol0(
+        mac = header["mac"],
+        ok = body["ok"],
+    )
+    return add_data(db_data)
+
 def save_data_1(header, body):
     db_data = Protocol1(
         mac = header["mac"],

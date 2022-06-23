@@ -36,6 +36,12 @@ def translateData(data):
 
     body = {}
     ERR = []
+    if protocol in [0]:
+        ok = int.from_bytes(bodyData[0:1], byteorder=BYTE_ORDER)
+        if ok != 1:
+            ERR.append("ok")
+        body["ok"] = ok
+
     if protocol in [1, 2, 3, 4, 5]:
         batt_level = int.from_bytes(bodyData[0:1], byteorder=BYTE_ORDER)
         if batt_level < 0 or batt_level > 100:

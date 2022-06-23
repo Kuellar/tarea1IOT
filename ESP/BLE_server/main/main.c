@@ -47,7 +47,7 @@ void app_main(void)
     }
 
     // VARS
-    // Sensor_Data_0 data0;
+    Sensor_Data_0 data0;
     Sensor_Data_1 data1;
     Sensor_Data_2 data2;
     Sensor_Data_3 data3;
@@ -285,12 +285,20 @@ void app_main(void)
                 );
                 inicio_status_0 = false;
             }
+            if(is_Aconnected && notificationA_enable){
+                tx_len = 10;
+                data0 = get_protocol_0((int8_t) 0);
+                memcpy(tx_data, &data0, sizeof(Sensor_Data_0));
+                ESP_ERROR_CHECK(BLE_send(tx_len, tx_data, false));
+                printf(".");
+                vTaskDelay(1000 / portTICK_PERIOD_MS);
+            }
             Read_NVS(&new_status, 1);
             if (status != new_status) break;
         }
         break;
     }
-
+    printf("\n");
     printf("END\n");
     esp_restart();
 
