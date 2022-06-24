@@ -1,4 +1,5 @@
 import os
+import time
 from PyQt5.QtCore import QCoreApplication, QObject, QThread, pyqtSignal, Qt
 from db.api_db import save_data_0, save_data_1, save_data_2, save_data_3, save_data_4, get_config
 from db.utils import translateData
@@ -27,6 +28,61 @@ class WorkerSearchConnectionBT(QObject):
         self.finished.emit()
 
 
+
+## SUBSCRIBE HANDLER
+def handleData(handle, value):
+    header, body = translateData(value)
+    if not header or not body:
+        return
+
+    saved = False
+    if header["protocol"] == 0:
+        saved = save_data_0(header, body)
+    elif header["protocol"] == 1:
+        saved = save_data_1(header, body)
+    elif header["protocol"] == 2:
+        saved = save_data_2(header, body)
+    elif header["protocol"] == 3:
+        saved = save_data_3(header, body)
+    elif header["protocol"] == 4:
+        saved = save_data_4(header, body)
+
+    if not saved:
+        print("BD ERROR")
+
+
+class WorkerConnectBT(QObject):
+    finished = pyqtSignal()
+
+    def __init__(self, mac, parent=None):
+        QThread.__init__(self, parent)
+        self.mac = mac
+
+    def run(self):
+        adapter = pygatt.backends.GATTToolBackend()
+        while not QThread.currentThread().isInterruptionRequested():
+            try:
+                adapter.start()
+                device = adapter.connect(self.mac)  # device_address
+                device.exchange_mtu(60)
+                device.subscribe("0000ff01-0000-1000-8000-00805F9B34FB", callback=handleData, wait_for_response=False)
+                print("WorkerConnectBT: Connected")
+                while not QThread.currentThread().isInterruptionRequested():
+                    time.sleep(4)
+                    if not device.get_rssi():
+                        print("WAT")
+                        break
+
+            except Exception as e:
+                self.device = None
+                adapter.stop()
+            else:
+                device.unsubscribe("0000ff01-0000-1000-8000-00805F9B34FB")
+                device.disconnect(self.mac)
+                adapter.stop()
+                print("ELSE")
+        self.finished.emit()
+
 def searchConnectionBT(self):
     if self.searchBTButton.text() == "Buscando...":
         return
@@ -50,102 +106,17 @@ def searchConnectionBT(self):
         self.thread.start()
 
 
-## SUBSCRIBE HANDLER
-def handleData(handle, value):
-    header, body = translateData(value)
-    if not header or not body:
-        return
-
-    saved = False
-    if header["protocol"] == 0:
-        saved = save_data_0(header, body)
-    elif header["protocol"] == 1:
-        saved = save_data_1(header, body)
-    elif header["protocol"] == 2:
-        saved = save_data_2(header, body)
-    elif header["protocol"] == 3:
-        saved = save_data_3(header, body)
-    elif header["protocol"] == 4:
-        saved = save_data_4(header, body)
-
-    if not saved:
-        print("BD ERROR")
-
 ## SUBSCRIBE
-def connectBT(self):
-    device = self.selectBTComboBox.currentText()
-    if not device:
-        self.consoleLog("ERROR: Device not selected")
-        return
+def subscribeBT(self):
+    self.consoleLog(f"Start monitoring")
+    self.startMonitoring()
 
-    device_address = device[-17:]
-    self.mac = int(device_address.replace(":",""), 16) - 2
-
-    old_config = get_config(self.mac)
-    if old_config.count() > 0:
-        self.AccSamplingBox.setText(str(old_config[0].BMI270_sampling))
-        self.AccSensibilityBox.setText(str(old_config[0].BMI270_Acc_Sensibility))
-        self.GyroSensibilityBox.setText(str(old_config[0].BMI270_Gyro_Sensibility))
-        self.BME688SamplingBox.setText(str(old_config[0].BME688_Sampling))
-        self.discontinuosTimeBox.setText(str(old_config[0].Discontinuous_Time))
-        self.portTCPBox.setText(str(old_config[0].Port_TCP))
-        self.portUDPBox.setText(str(old_config[0].Port_UDP))
-        self.hostIPAddrBox.setText(str(old_config[0].Host_Ip_Addr))
-        self.ssidBox.setText(str(old_config[0].Ssid))
-        self.passBox.setText(str(old_config[0].Pass))
-        status_text = next(key for key, value in self.STATUS_DICT.items() if value == int(old_config[0].Status))
-        status_index = self.operationModeBox.findText(status_text, Qt.MatchFixedString)
-        self.operationModeBox.setCurrentIndex(status_index)
-        self.operationModeSelected()
-        index = self.protocolIDBox.findText(str(old_config[0].ID_Protocol), Qt.MatchFixedString)
-        self.protocolIDBox.setCurrentIndex(index)
-
-        # Guardamos el protocolo
-        self.setProtocol(old_config[0].ID_Protocol)
-        self.started_monitoring = False
-
-
-        if old_config[0].Status not in [0, 20]:
-            self.AccSamplingBox.setDisabled(True)
-            self.AccSensibilityBox.setDisabled(True)
-            self.GyroSensibilityBox.setDisabled(True)
-            self.BME688SamplingBox.setDisabled(True)
-            self.discontinuosTimeBox.setDisabled(True)
-            self.portTCPBox.setDisabled(True)
-            self.portUDPBox.setDisabled(True)
-            self.hostIPAddrBox.setDisabled(True)
-            self.ssidBox.setDisabled(True)
-            self.passBox.setDisabled(True)
-        else:
-            self.AccSamplingBox.setDisabled(False)
-            self.AccSensibilityBox.setDisabled(False)
-            self.GyroSensibilityBox.setDisabled(False)
-            self.BME688SamplingBox.setDisabled(False)
-            self.discontinuosTimeBox.setDisabled(False)
-            self.portTCPBox.setDisabled(False)
-            self.portUDPBox.setDisabled(False)
-            self.hostIPAddrBox.setDisabled(False)
-            self.ssidBox.setDisabled(False)
-            self.passBox.setDisabled(False)
-    
-    else:
-        # Guardamos el protocolo 0 si no hemos registrado el ESP32
-        self.setProtocol(0)
-        self.started_monitoring = False
-        self.selectVariableBox.clear()
-        
-    adapter = pygatt.backends.GATTToolBackend()
-
-    self.consoleLog(f" Connecting to {device} ...")
-    try:
-        adapter.start()
-        self.device = adapter.connect(device_address)
-        self.device.exchange_mtu(60)
-        self.consoleLog(f" Connected to {device} ...")
-        self.device.subscribe(self.deviceUUID, callback=handleData, wait_for_response=False)
-        self.label_statusESP.setText("Conectado")
-    except Exception as e:
-        adapter.stop()
-        self.device = None
-        self.consoleLog(f" Connection closed - {e}")
-        self.label_statusESP.setText("Desconectado")
+    # LAUNCH THREAD
+    self.threadConnectBT = QThread()
+    self.workerConnectBT = WorkerConnectBT(mac=self.mac_bt)
+    self.workerConnectBT.moveToThread(self.threadConnectBT)
+    self.threadConnectBT.started.connect(self.workerConnectBT.run)
+    self.workerConnectBT.finished.connect(self.threadConnectBT.quit)
+    self.workerConnectBT.finished.connect(self.workerConnectBT.deleteLater)
+    self.threadConnectBT.finished.connect(self.threadConnectBT.deleteLater)
+    self.threadConnectBT.start()

@@ -13,7 +13,8 @@ from PyQt5.QtCore import QTimer
 import pyqtgraph as pg
 import numpy as np
 from db.model import Protocol0, Protocol1, Protocol2, Protocol3, Protocol4, Protocol5
-from qt_utils.connection import searchConnectionBT, connectBT
+from qt_utils.connection import searchConnectionBT, subscribeBT
+from qt_utils.utils import selectBT
 from qt_utils.configs import saveConfiguration
 from qt_utils.plots import updatePlots, getVariablesList
 from sockets.server_udp import initUdpServer
@@ -267,6 +268,7 @@ class Ui_Dialog(object):
         self.device = None
         self.deviceUUID = "0000ff01-0000-1000-8000-00805F9B34FB"
         self.mac = None
+        self.mac_bt = None
 
         self.STATUS_DICT = {
             "Configuracion por Bluetooth": 0,
@@ -296,11 +298,11 @@ class Ui_Dialog(object):
         self.Acc_z_data = np.zeros(20)
 
         self.searchBTButton.clicked.connect(lambda  x: searchConnectionBT(self))
-        self.selectBTButton.clicked.connect(lambda  x: connectBT(self))
+        self.selectBTButton.clicked.connect(lambda  x: selectBT(self))
         self.saveConfButton.clicked.connect(lambda  x: saveConfiguration(self))
         self.startPlotButton.clicked.connect(self.startPlot)
         self.stopPlotButton.clicked.connect(self.stopPlot)
-        self.startMonitoringButton.clicked.connect(self.startMonitoring)
+        self.startMonitoringButton.clicked.connect(lambda  x: subscribeBT(self))
         self.stopMonitoringButton.clicked.connect(self.stopMonitoring)
         self.operationModeBox.currentIndexChanged.connect(self.operationModeSelected)
 
@@ -312,7 +314,7 @@ class Ui_Dialog(object):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.updatePlots)
-        self.timer.start(500)
+        self.timer.start(1000)
 
         self.graph_item_1 = pg.PlotItem()
         self.plot1.addItem(self.graph_item_1)
@@ -332,13 +334,13 @@ class Ui_Dialog(object):
         self.label_statusESP.setText(_translate("Dialog", "Desconectado"))
         self.searchBTButton.setText(_translate("Dialog", "Buscar BLE"))
         self.label_21.setText(_translate("Dialog", "Consola"))
-        self.selectBTButton.setText(_translate("Dialog", "Conectar"))
+        self.selectBTButton.setText(_translate("Dialog", "Seleccionar"))
         self.label_29.setText(_translate("Dialog", "Parametros "))
         self.label_30.setText(_translate("Dialog", "Acc Sampling"))
         self.label_31.setText(_translate("Dialog", "Acc Sensibility"))
         self.label_39.setText(_translate("Dialog", "Gyro Sensibility"))
-        self.label_41.setText(_translate("Dialog", "BME688 Sampling"))
-        self.label_42.setText(_translate("Dialog", "Discontinuos time"))
+        self.label_42.setText(_translate("Dialog", "BME688 Sampling"))
+        self.label_41.setText(_translate("Dialog", "Discontinuos time"))
         self.label_54.setText(_translate("Dialog", "Port TCP"))
         self.label_55.setText(_translate("Dialog", "Port UDP"))
         self.label_70.setText(_translate("Dialog", "Host_ip_addr"))
@@ -433,9 +435,15 @@ class Ui_Dialog(object):
     #TODO: Hacer que estos comiencen y finalicen el monitoreo
     # Recordar que con protocolo 0 no se puede monitorear
     def startMonitoring(self):
+        if not self.mac_bt:
+            return
+
         if self.protocol != self.protocol_list[0]:
             self.started_monitoring = True
+
     def stopMonitoring(self):
+        self.consoleLog(f"Monitoring stop")
+        self.threadConnectBT.requestInterruption()
         self.started_monitoring = False
 
     def getPlotData(self, var):

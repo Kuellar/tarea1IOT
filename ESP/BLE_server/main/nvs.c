@@ -63,10 +63,10 @@ int Write_NVS(int32_t data, int key) {
                 printf("ERROR key");
                 break;
         }
-        // printf((err != ESP_OK) ? "Failed in NVS!\n" : "Done\n");
+        printf((err != ESP_OK) ? "Failed in NVS!\n" : "Done\n");
         // printf("Committing updates in NVS ... ");
         err = nvs_commit(my_handle);
-        // printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
+        printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
         // Close
         nvs_close(my_handle);
     }

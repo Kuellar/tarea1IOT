@@ -1,11 +1,15 @@
+from time import sleep
 from db.model import Config
 from db.api_db import add_config, update_config, get_config
+import pygatt
 
 def saveConfiguration(self):
-    if not self.mac:
+    if not self.mac_bt:
         return
 
-    self.label_statusESP.setText("Desconectado")
+    DATA_TO_SEND = []
+
+    # self.label_statusESP.setText("Desconectado")
     # SEND CONFIG TO ESP
     Status = self.STATUS_DICT[self.operationModeBox.currentText()]
     ID_Protocol = int(self.protocolIDBox.currentText())
@@ -26,7 +30,7 @@ def saveConfiguration(self):
             bytearray((idx+3).to_bytes(1, 'big')) +
             bytearray(val_box)
         )
-        self.device.char_write(self.deviceUUID, esp_data)
+        DATA_TO_SEND.append(esp_data)
 
     val_boxex_text = [
         bytes(self.ssidBox.toPlainText(), 'utf-8'),
@@ -34,12 +38,12 @@ def saveConfiguration(self):
     ]
 
     for idx, val_box in enumerate(val_boxex_text):
-        esp_data = (
+        esp_data_2 = (
             bytearray((4).to_bytes(1, 'big')) +
             bytearray((idx+11).to_bytes(1, 'big')) +
             bytearray(val_box)
         )
-        self.device.char_write(self.deviceUUID, esp_data)
+        DATA_TO_SEND.append(esp_data_2)
 
     # SAVE DATA IN DB
     self.consoleLog("Saving configuration...")
@@ -65,7 +69,7 @@ def saveConfiguration(self):
         except:
             self.consoleLog("Wrong configuration inputs")
         if update_config(self.mac, new_config):
-            self.device.char_write(self.deviceUUID, bytearray([2, Status, ID_Protocol]))
+            DATA_TO_SEND.append(bytearray([2, Status, ID_Protocol]))
             self.consoleLog("Configuration saved")
         else:
             self.consoleLog("Error saving configuration")
@@ -90,8 +94,25 @@ def saveConfiguration(self):
             self.consoleLog("Wrong configuration inputs")
         if add_config(configs):
             self.consoleLog("Configuration saved")
-            self.device.char_write(self.deviceUUID, bytearray([2, Status, ID_Protocol]))
+            DATA_TO_SEND.append(bytearray([2, Status, ID_Protocol]))
         else:
             self.consoleLog("Error saving configuration")
 
+    # SELECT PROTOCOL FOR PLOTS
+    self.setProtocol(ID_Protocol)
 
+    # CONNECT TO BT
+    adapter = pygatt.backends.GATTToolBackend()
+    for data in DATA_TO_SEND:
+        while True:
+            try:
+                adapter.start()
+                device = adapter.connect(self.mac_bt)
+                device.exchange_mtu(60)
+                device.char_write(self.deviceUUID, data)
+                break
+            except:
+                sleep(1)
+            finally:
+                adapter.stop()
+    self.consoleLog("BT CONFIG: Sended data full")

@@ -15,6 +15,7 @@
 #include "esp_bt_main.h"
 #include "esp_gatt_common_api.h"
 #include "sdkconfig.h"
+#include <inttypes.h>
 
 #include "BLE_server.h"
 #include "nvs.h"
@@ -306,6 +307,7 @@ void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gat
             }
             if (param->write.value[0] == 3) {
                 int32_t data_config = (param->write.value[2] << 24) | (param->write.value[3] << 16) | (param->write.value[4] << 8) | param->write.value[5];
+                printf("New val: %" PRIu32 "\n", data_config);
                 Write_NVS(data_config, param->write.value[1]);
             }
             if (param->write.value[0] == 4) {

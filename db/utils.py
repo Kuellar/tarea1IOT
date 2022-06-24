@@ -13,6 +13,8 @@ def translateData(data):
 
     status = int.from_bytes(data[1:2], byteorder="big")
     if status not in [0, 20, 21, 22, 23, 30, 31]:
+        if status == 1:
+            return False, False
         print("ERROR: Invalid status", status)
         return False, False
 

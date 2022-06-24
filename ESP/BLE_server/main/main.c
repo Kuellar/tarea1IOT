@@ -118,7 +118,7 @@ void app_main(void)
             Write_NVS(0, 2);  // PROTOCOL 0
         }
 
-        err_read_status = Read_NVS(&deep_sleep_time, 7);
+        err_read_status = Read_NVS(&deep_sleep_time, 6);
         if (err_read_status == ESP_ERR_NVS_NOT_FOUND || deep_sleep_time > 60) {
             printf("ERROR: Deep Sleep\n");
             Write_NVS(0, 1);  // STATUS 0
@@ -217,7 +217,9 @@ void app_main(void)
             vTaskDelay(500);
         }
 
-        printf("Connection established\n");
+        printf("BLE discontinua\n");
+
+        printf("Connection established \n");
         printf("gatts_if %d, conn_id: %d, handle %d\n", gl_profile_tab[PROFILE_A_APP_ID].gatts_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle);
         printf("Sending data protocol: %" PRIu32 "\n", protocol);
         vTaskDelay(500);
@@ -259,14 +261,15 @@ void app_main(void)
         Read_NVS(&new_status, 1);
         if (status != new_status) break;
 
-        err_read_status = Read_NVS(&deep_sleep_time, 7);
+        err_read_status = Read_NVS(&deep_sleep_time, 6);
+        printf("Deep sleep for: %" PRIu32 " seconds\n", deep_sleep_time);
         if (err_read_status == ESP_ERR_NVS_NOT_FOUND || deep_sleep_time > 60) {
             printf("ERROR: Deep Sleep\n");
             Write_NVS(0, 1);  // STATUS 0
             Write_NVS(0, 2);  // PROTOCOL 0
         }
-        printf("Deep sleep for: %" PRIu32 " seconds\n", deep_sleep_time);
         ESP_ERROR_CHECK(esp_bt_controller_disable());
+        printf("Deep Sleep\n");
         esp_deep_sleep(1e6 * deep_sleep_time); // microsecond
         break;
     default:
@@ -290,7 +293,7 @@ void app_main(void)
                 data0 = get_protocol_0((int8_t) 0);
                 memcpy(tx_data, &data0, sizeof(Sensor_Data_0));
                 ESP_ERROR_CHECK(BLE_send(tx_len, tx_data, false));
-                printf(".");
+                printf("Status 0\n");
                 vTaskDelay(1000 / portTICK_PERIOD_MS);
             }
             Read_NVS(&new_status, 1);
@@ -298,7 +301,6 @@ void app_main(void)
         }
         break;
     }
-    printf("\n");
     printf("END\n");
     esp_restart();
 
