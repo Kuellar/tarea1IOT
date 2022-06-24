@@ -3,7 +3,7 @@ from db.model import Config
 from db.api_db import add_config, update_config, get_config
 import pygatt
 
-def saveConfiguration(self):
+def saveConfigurationBT(self):
     if not self.mac_bt:
         return
 
@@ -116,3 +116,67 @@ def saveConfiguration(self):
             finally:
                 adapter.stop()
     self.consoleLog("BT CONFIG: Sended data full")
+
+def saveConfigurationWIFI(self):
+    Status = self.STATUS_DICT[self.operationModeBox.currentText()]
+    ID_Protocol = int(self.protocolIDBox.currentText())
+    self.consoleLog("Saving configuration...")
+    lastConfig = get_config(self.mac)
+
+    if lastConfig.count() == 1:
+        try:
+            new_config = {
+                "Status": Status,
+                "ID_Protocol": ID_Protocol,
+                "BMI270_sampling": int(self.AccSamplingBox.toPlainText()),
+                "BMI270_Acc_Sensibility": int(self.AccSensibilityBox.toPlainText()),
+                "BMI270_Gyro_Sensibility": int(self.GyroSensibilityBox.toPlainText()),
+                "BME688_Sampling": int(self.BME688SamplingBox.toPlainText()),
+                "Discontinuous_Time": int(self.discontinuosTimeBox.toPlainText()),
+                "Port_TCP": int(self.portTCPBox.toPlainText()),
+                "Port_UDP": int(self.portUDPBox.toPlainText()),
+                "Host_Ip_Addr": int(self.hostIPAddrBox.toPlainText()),
+                "Ssid": self.ssidBox.toPlainText(),
+                "Pass": self.passBox.toPlainText(),
+            }
+
+        except:
+            self.consoleLog("Wrong configuration inputs")
+        if update_config(self.mac, new_config):
+            self.consoleLog("Configuration saved")
+        else:
+            self.consoleLog("Error saving configuration")
+    else:
+        try:
+            configs = Config(
+                mac = self.mac,
+                Status = Status,
+                ID_Protocol = ID_Protocol,
+                BMI270_sampling = int(self.AccSamplingBox.toPlainText()),
+                BMI270_Acc_Sensibility = int(self.AccSensibilityBox.toPlainText()),
+                BMI270_Gyro_Sensibility = int(self.GyroSensibilityBox.toPlainText()),
+                BME688_Sampling = int(self.BME688SamplingBox.toPlainText()),
+                Discontinuous_Time = int(self.discontinuosTimeBox.toPlainText()),
+                Port_TCP = int(self.portTCPBox.toPlainText()),
+                Port_UDP = int(self.portUDPBox.toPlainText()),
+                Host_Ip_Addr = int(self.hostIPAddrBox.toPlainText()),
+                Ssid = self.ssidBox.toPlainText(),
+                Pass = self.passBox.toPlainText(),
+            )
+        except:
+            self.consoleLog("Wrong configuration inputs")
+        if add_config(configs):
+            self.consoleLog("Configuration saved")
+        else:
+            self.consoleLog("Error saving configuration")
+
+    # SELECT PROTOCOL FOR PLOTS
+    self.setProtocol(ID_Protocol)
+
+def saveConfiguration(self):
+    if self.label_statusESP.text() == "Conectado UDP/TCP":
+        print("CONFIGURATION WIFI")
+        saveConfigurationWIFI(self)
+    else:
+        print("CONFIGURATION BT")
+        saveConfigurationBT(self)

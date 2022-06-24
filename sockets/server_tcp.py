@@ -20,7 +20,6 @@ class WorkerTcpServer(QObject):
         while True:
             try:
                 conn, addr = s.accept()  # waits for a new connection
-                self.connected.emit(True)
                 print('TCP: Client connected: ', addr)
                 while True:
                     # RECEIVE DATA
@@ -28,6 +27,7 @@ class WorkerTcpServer(QObject):
                     if not data:
                         break
                     header, body = translateData(data)
+                    self.connected.emit(header["mac"])
                     if header and body:
                         print(header, body)
                         if header["protocol"] == 1 and len(body) == 5:
@@ -48,7 +48,7 @@ class WorkerTcpServer(QObject):
                         # ERROR: Send status 0 - protocol - 0
                         conn.sendall(b'\x00\x00')
                 conn.close()
-                self.connected.emit(False)
+                self.connected.emit(0)
                 print("TCP: Client disconected: ", addr)
             except Exception as e:
                 print("TCP: Exception - ", e)

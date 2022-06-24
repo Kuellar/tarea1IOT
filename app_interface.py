@@ -470,7 +470,8 @@ class Ui_Dialog(object):
 
     def setConnected(self, connected):
         if connected:
-            self.label_statusESP.setText("Conectado")
+            self.mac = connected
+            self.label_statusESP.setText("Conectado UDP/TCP")
         else:
             self.label_statusESP.setText("Desconectado")
 

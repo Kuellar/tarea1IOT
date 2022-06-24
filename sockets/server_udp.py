@@ -9,7 +9,7 @@ load_dotenv()
 
 class WorkerUdpServer(QObject):
     finished = pyqtSignal()
-    connected = pyqtSignal(bool)
+    connected = pyqtSignal(int)
 
     def run(self):
         HOST = os.getenv('HOST')
@@ -21,9 +21,9 @@ class WorkerUdpServer(QObject):
                 s.bind((HOST, PORT))
                 while True:
                     data, adr = s.recvfrom(7000)
-                    self.connected.emit(True)
                     header, body = translateData(data)
                     if header and body:
+                        self.connected.emit(header["mac"])
                         print(header, body)
                         if header["protocol"] == 1 and len(body) == 5:
                             save_data_1(header, body)
